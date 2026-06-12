@@ -4,9 +4,9 @@ tags:
   - backlog
   - etapa-1
   - mvp
-estado: listo-para-primer-sprint
+estado: sprint-1-implementado
 fecha_creacion: 2026-06-11
-ultima_revision: 2026-06-11
+ultima_revision: 2026-06-12
 proyecto: "Organizador de calendario inteligente"
 ---
 
@@ -18,25 +18,40 @@ Stack: Stack técnico y plan de inicio
 Modelo: Modelo de datos inicial
 Ruta desarrollo: `C:\Users\Oscar\Documents\Proyecto-Personal`
 
+
+## Verificación 2026-06-12 (actualizada tras Sprint 1)
+
+Resultado: **Sprint 0 completo; Sprint 1 implementado y verificado en código** (falta aplicar la migración SQL en Supabase, paso manual).
+
+Validación ejecutada al cierre del Sprint 1:
+
+- ✅ `npm run build`
+- ✅ `npm run lint`
+- ✅ `npm run test` (10/10 — el test que dependía del `.env.local` real fue corregido)
+- ✅ `npm run test:e2e` (3/3 en Chromium)
+
+Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-sprint-1-auth-db.md`.
 ## Sprint 0 — Preparación
 
-- [ ] Inicializar Git en la ruta de desarrollo.
-- [ ] Crear app `apps/calendar-pwa` con Vite + React + TypeScript.
-- [ ] Instalar dependencias base.
-- [ ] Configurar ESLint/formatter si aplica.
-- [ ] Crear proyecto Supabase.
-- [ ] Crear `.env.local` desde `.env.example`.
-- [ ] Documentar cómo correr el proyecto localmente.
+- [x] Inicializar Git en la ruta de desarrollo.
+- [x] Crear app `apps/calendar-pwa` con Vite + React + TypeScript.
+- [x] Instalar dependencias base.
+- [x] Configurar ESLint/formatter si aplica.
+- [x] Crear proyecto Supabase / confirmar proyecto Supabase remoto y configuración.
+- [x] Crear `.env.local` desde `.env.example` con URL y anon key configuradas.
+- [x] Documentar cómo correr el proyecto localmente.
 
 ## Sprint 1 — Auth y base de datos
 
-- [ ] Crear migración inicial de `profiles`, `calendars`, `events`, `tasks`, `reminders`.
-- [ ] Activar RLS en tablas principales.
-- [ ] Crear políticas RLS por `user_id`.
-- [ ] Implementar registro con correo + contraseña.
-- [ ] Implementar verificación de correo.
-- [ ] Implementar login/logout.
-- [ ] Crear calendario por defecto al registrar usuario.
+- [x] Crear migración inicial de `profiles`, `calendars`, `events`, `tasks`, `reminders`.
+- [x] Activar RLS en tablas principales (en la migración).
+- [x] Crear políticas RLS por `user_id` (en la migración).
+- [x] Implementar registro con correo + contraseña.
+- [x] Implementar verificación de correo (aviso post-registro + estado en /app).
+- [x] Implementar login/logout.
+- [x] Crear calendario por defecto al registrar usuario (trigger en la migración).
+- [ ] **Paso manual pendiente (Oscar): aplicar la migración en Supabase SQL Editor** — ver `docs/08-sprint-1-auth-db.md`.
+- [ ] Probar registro/login real de extremo a extremo tras aplicar la migración.
 
 ## Sprint 2 — Eventos y tareas
 

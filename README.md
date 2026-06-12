@@ -73,7 +73,7 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 ## Estado del proyecto
 
 - ✅ Sprint 0 — Preparación del repo y base frontend
-- ⬜ Sprint 1 — Auth y base de datos
+- ✅ Sprint 1 — Auth y base de datos (falta aplicar migración en Supabase, ver abajo)
 - ⬜ Sprint 2 — Eventos y tareas
 - ⬜ Sprint 3 — Vistas de calendario
 - ⬜ Sprint 4 — Sincronización Realtime
@@ -83,9 +83,10 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 
 ### Pasos manuales pendientes (Oscar)
 
-1. Crear el proyecto en [Supabase](https://supabase.com) (plan Free) — necesario para Sprint 1.
-2. Copiar URL y anon key a `apps/calendar-pwa/.env.local`.
-3. Opcional: `npx playwright install chromium` para correr los tests e2e.
+1. **Aplicar la migración SQL** en Supabase SQL Editor — instrucciones paso a paso en
+   [docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md).
+2. Configurar Site URL (`http://localhost:5173`) en Authentication → URL Configuration.
+3. Probar registro → verificación de correo → login (guía en el mismo doc).
 
 Ver documentación completa en `docs/` y el plan de sprints en
 `docs/prompts/00-prompt-maestro-desarrollo-por-sprints.md`.

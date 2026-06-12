@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/config/env'
+import { SupabaseStatusBanner } from '../components/SupabaseStatusBanner'
 
 export function HomePage() {
   return (
@@ -14,17 +15,7 @@ export function HomePage() {
         </p>
       </div>
 
-      <div
-        className={`rounded-lg border p-4 text-sm ${
-          isSupabaseConfigured
-            ? 'border-green-300 bg-green-50 text-green-800'
-            : 'border-amber-300 bg-amber-50 text-amber-800'
-        }`}
-      >
-        {isSupabaseConfigured
-          ? 'Supabase configurado: la app puede conectarse al backend.'
-          : 'Supabase aún no configurado: define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local.'}
-      </div>
+      <SupabaseStatusBanner configured={isSupabaseConfigured} />
 
       <nav className="grid gap-3 sm:grid-cols-2">
         <Link

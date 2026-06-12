@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# calendar-pwa
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App principal del **Organizador de calendario inteligente**: PWA mobile-first en
+React + TypeScript + Vite, con Supabase como backend (Auth, Postgres con RLS, Realtime).
 
-Currently, two official plugins are available:
+Documentación general del proyecto: [README raíz](../../README.md) y [docs/](../../docs/).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requisitos
 
-## React Compiler
+- Node.js LTS
+- `apps/calendar-pwa/.env.local` con las variables de Supabase (ver abajo)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Comandos
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```powershell
+npm install        # instalar dependencias
+npm run dev        # servidor de desarrollo (http://localhost:5173)
+npm run build      # type-check (tsc -b) + build de producción
+npm run preview    # servir el build de producción
+npm run lint       # ESLint
+npm run test       # tests unitarios (Vitest + Testing Library)
+npm run test:watch # tests unitarios en modo watch
+npm run test:e2e   # tests e2e (Playwright; requiere: npx playwright install chromium)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables de entorno
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copiar `.env.example` a `.env.local`:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_SUPABASE_URL=      # Project URL del proyecto Supabase
+VITE_SUPABASE_ANON_KEY= # anon/publishable key (frontend-safe)
 ```
+
+La app carga sin estas variables (muestra aviso ámbar en la home), pero auth y datos
+requieren que existan. **Nunca** poner aquí la service role key.
+
+## Estructura
+
+```text
+src/
+├─ app/            # AppLayout (shell con navegación)
+├─ routes/         # router + HomePage
+├─ components/     # UI compartida (SupabaseStatusBanner, …)
+├─ features/
+│  ├─ auth/        # AuthProvider, useAuth, authService, Login/Register, ProtectedRoute
+│  ├─ calendar/    # CalendarPage (/app, protegida)
+│  ├─ events/      # (Sprint 2)
+│  └─ tasks/       # (Sprint 2)
+├─ lib/config/     # lectura de env vars (env.ts)
+├─ lib/supabase/   # cliente Supabase (client.ts)
+├─ styles/         # CSS global (Tailwind v4)
+└─ test/           # setup de Vitest (jest-dom + cleanup)
+```
+
+## Rutas
+
+| Ruta | Acceso | Contenido |
+|---|---|---|
+| `/` | pública | Home con estado de Supabase y accesos |
+| `/login` | pública | Login con correo + contraseña |
+| `/register` | pública | Registro con verificación de correo |
+| `/app` | **protegida** | Sesión, calendario por defecto, logout |
+
+## Base de datos
+
+Las migraciones SQL viven en [supabase/migrations/](../../supabase/migrations/).
+Cómo aplicarlas y probar auth: [docs/08-sprint-1-auth-db.md](../../docs/08-sprint-1-auth-db.md).

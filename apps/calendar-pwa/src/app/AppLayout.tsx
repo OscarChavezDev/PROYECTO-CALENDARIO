@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../features/auth/useAuth'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `rounded-md px-3 py-2 text-sm font-medium transition-colors ${
@@ -6,6 +7,8 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   }`
 
 export function AppLayout() {
+  const { session } = useAuth()
+
   return (
     <div className="flex min-h-dvh flex-col bg-slate-100">
       <header className="bg-slate-900 px-4 py-3">
@@ -15,12 +18,20 @@ export function AppLayout() {
             <NavLink to="/" end className={navLinkClass}>
               Inicio
             </NavLink>
-            <NavLink to="/login" className={navLinkClass}>
-              Login
-            </NavLink>
-            <NavLink to="/app" className={navLinkClass}>
-              App
-            </NavLink>
+            {session ? (
+              <NavLink to="/app" className={navLinkClass}>
+                Mi calendario
+              </NavLink>
+            ) : (
+              <>
+                <NavLink to="/login" className={navLinkClass}>
+                  Login
+                </NavLink>
+                <NavLink to="/register" className={navLinkClass}>
+                  Registro
+                </NavLink>
+              </>
+            )}
           </nav>
         </div>
       </header>
