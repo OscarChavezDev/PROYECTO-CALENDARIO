@@ -65,12 +65,12 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 
 ## Sprint 3 — Vistas de calendario
 
-- [ ] Crear vista diaria.
-- [ ] Crear vista semanal.
-- [ ] Crear vista mensual.
-- [ ] Crear lista de pendientes de hoy.
-- [ ] Ordenar por hora y prioridad.
-- [ ] Mostrar etiquetas de evento/tarea.
+- [x] Crear vista diaria.
+- [x] Crear vista semanal (lista agrupada por día, mobile-first).
+- [x] Crear vista mensual (grilla con puntos por prioridad).
+- [x] Crear lista de pendientes de hoy (+ tareas sin fecha).
+- [x] Ordenar por hora y prioridad (sin hora al final).
+- [x] Mostrar etiquetas de evento/tarea (badges de tipo, prioridad y estado).
 
 ## Sprint 4 — Sincronización
 

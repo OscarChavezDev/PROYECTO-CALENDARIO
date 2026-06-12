@@ -75,7 +75,7 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 - ✅ Sprint 0 — Preparación del repo y base frontend
 - ✅ Sprint 1 — Auth y base de datos (migración aplicada y flujo probado)
 - ✅ Sprint 2 — Eventos y tareas (CRUD completo en /app)
-- ⬜ Sprint 3 — Vistas de calendario
+- ✅ Sprint 3 — Vistas de calendario (Hoy/Día/Semana/Mes con filtros)
 - ⬜ Sprint 4 — Sincronización Realtime
 - ⬜ Sprint 5 — PWA y offline
 - ⬜ Sprint 6 — Notificaciones
