@@ -76,19 +76,19 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 
 - [x] Conectar Supabase Realtime a eventos.
 - [x] Conectar Supabase Realtime a tareas.
-- [ ] Probar crear desde PC y ver en iPhone (manual, Oscar — requiere migración 0002 aplicada).
-- [ ] Probar crear desde iPhone y ver en PC (manual, Oscar).
+- [x] Probar crear desde PC y ver en iPhone — probado por Oscar 2026-06-12 (migración 0002 aplicada).
+- [x] Probar crear desde iPhone y ver en PC — probado por Oscar 2026-06-12.
 - [x] Implementar recarga/reconciliación si Realtime falla (refetch manual + automático al reconectar).
 
 ## Sprint 5 — PWA y offline
 
-- [ ] Crear manifest de PWA.
-- [ ] Configurar service worker.
-- [ ] Cachear assets básicos.
-- [ ] Guardar datos recientes para lectura offline.
-- [ ] Crear cola local de mutaciones offline.
-- [ ] Sincronizar cola al recuperar conexión.
-- [ ] Aplicar regla de conflicto simple: gana `updated_at` más reciente.
+- [x] Crear manifest de PWA (+ iconos y metas iOS).
+- [x] Configurar service worker (solo producción; network-first navegación, cache-first assets).
+- [x] Cachear assets básicos (verificado: la app abre con el servidor apagado).
+- [x] Guardar datos recientes para lectura offline (snapshots en IndexedDB).
+- [x] Crear cola local de mutaciones offline (entity_type, operation, payload, attempts, last_error).
+- [x] Sincronizar cola al recuperar conexión (en orden, se detiene al primer fallo).
+- [x] Aplicar regla de conflicto simple: gana `updated_at` más reciente.
 
 ## Sprint 6 — Notificaciones
 

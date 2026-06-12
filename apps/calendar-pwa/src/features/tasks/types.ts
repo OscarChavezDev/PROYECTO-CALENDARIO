@@ -32,6 +32,8 @@ export interface Task {
   requires_deliverable: boolean
   deliverable_description: string | null
   completed_at: string | null
+  external_provider: string | null
+  external_task_id: string | null
   sync_status: SyncStatus
   created_at: string
   updated_at: string

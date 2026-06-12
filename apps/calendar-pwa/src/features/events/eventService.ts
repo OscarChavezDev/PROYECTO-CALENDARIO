@@ -19,6 +19,34 @@ function toPayload(values: EventFormValues) {
   }
 }
 
+/** Evento local optimista para mostrar offline antes de sincronizar. */
+export function buildLocalEvent(
+  userId: string,
+  calendarId: string,
+  values: EventFormValues,
+): CalendarEvent {
+  const now = new Date().toISOString()
+  return {
+    id: `local-${crypto.randomUUID()}`,
+    user_id: userId,
+    calendar_id: calendarId,
+    ...toPayload(values),
+    external_provider: null,
+    external_calendar_id: null,
+    external_event_id: null,
+    last_external_sync_at: null,
+    sync_status: 'local',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  }
+}
+
+/** Aplica valores del formulario a un evento existente (edición offline). */
+export function mergeEventValues(event: CalendarEvent, values: EventFormValues): CalendarEvent {
+  return { ...event, ...toPayload(values), updated_at: new Date().toISOString() }
+}
+
 export async function listEvents(): Promise<CalendarEvent[]> {
   const supabase = requireClient()
   const { data, error } = await supabase

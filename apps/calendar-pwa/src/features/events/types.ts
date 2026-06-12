@@ -25,6 +25,10 @@ export interface CalendarEvent {
   requires_deliverable: boolean
   deliverable_description: string | null
   location: string | null
+  external_provider: string | null
+  external_calendar_id: string | null
+  external_event_id: string | null
+  last_external_sync_at: string | null
   sync_status: SyncStatus
   created_at: string
   updated_at: string

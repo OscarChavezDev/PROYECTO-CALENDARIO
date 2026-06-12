@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { OfflineBanner } from '../components/OfflineBanner'
 import { useAuth } from '../features/auth/useAuth'
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -35,6 +36,7 @@ export function AppLayout() {
           </nav>
         </div>
       </header>
+      <OfflineBanner />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
         <Outlet />
       </main>

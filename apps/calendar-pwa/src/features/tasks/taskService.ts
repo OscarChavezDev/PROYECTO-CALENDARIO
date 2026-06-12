@@ -15,6 +15,32 @@ function toPayload(values: TaskFormValues) {
   }
 }
 
+/** Tarea local optimista para mostrar offline antes de sincronizar. */
+export function buildLocalTask(userId: string, calendarId: string, values: TaskFormValues): Task {
+  const now = new Date().toISOString()
+  return {
+    id: `local-${crypto.randomUUID()}`,
+    user_id: userId,
+    calendar_id: calendarId,
+    related_event_id: null,
+    ...toPayload(values),
+    due_date: null,
+    status: 'pendiente',
+    completed_at: null,
+    external_provider: null,
+    external_task_id: null,
+    sync_status: 'local',
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  }
+}
+
+/** Aplica valores del formulario a una tarea existente (edición offline). */
+export function mergeTaskValues(task: Task, values: TaskFormValues): Task {
+  return { ...task, ...toPayload(values), updated_at: new Date().toISOString() }
+}
+
 export async function listTasks(): Promise<Task[]> {
   const supabase = requireClient()
   const { data, error } = await supabase
