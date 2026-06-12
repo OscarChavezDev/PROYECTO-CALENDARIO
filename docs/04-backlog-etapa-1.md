@@ -74,11 +74,11 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 
 ## Sprint 4 — Sincronización
 
-- [ ] Conectar Supabase Realtime a eventos.
-- [ ] Conectar Supabase Realtime a tareas.
-- [ ] Probar crear desde PC y ver en iPhone.
-- [ ] Probar crear desde iPhone y ver en PC.
-- [ ] Implementar recarga/reconciliación si Realtime falla.
+- [x] Conectar Supabase Realtime a eventos.
+- [x] Conectar Supabase Realtime a tareas.
+- [ ] Probar crear desde PC y ver en iPhone (manual, Oscar — requiere migración 0002 aplicada).
+- [ ] Probar crear desde iPhone y ver en PC (manual, Oscar).
+- [x] Implementar recarga/reconciliación si Realtime falla (refetch manual + automático al reconectar).
 
 ## Sprint 5 — PWA y offline
 

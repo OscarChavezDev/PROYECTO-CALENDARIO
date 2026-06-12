@@ -76,16 +76,21 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 - ✅ Sprint 1 — Auth y base de datos (migración aplicada y flujo probado)
 - ✅ Sprint 2 — Eventos y tareas (CRUD completo en /app)
 - ✅ Sprint 3 — Vistas de calendario (Hoy/Día/Semana/Mes con filtros)
-- ⬜ Sprint 4 — Sincronización Realtime
+- ✅ Sprint 4 — Sincronización Realtime (requiere aplicar migración 0002, ver abajo)
 - ⬜ Sprint 5 — PWA y offline
 - ⬜ Sprint 6 — Notificaciones
 - ⬜ Sprint 7 — Validación MVP
 
 ### Pasos manuales pendientes (Oscar)
 
-Ninguno por ahora. Guías de referencia: aplicar migraciones y probar auth en
-[docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md); probar eventos/tareas en
-[docs/09-sprint-2-eventos-y-tareas.md](docs/09-sprint-2-eventos-y-tareas.md).
+1. **Aplicar la migración** `supabase/migrations/202606120002_enable_realtime.sql` en
+   Supabase SQL Editor (habilita Realtime en events/tasks) — guía en
+   [docs/11-sprint-4-sincronizacion-realtime.md](docs/11-sprint-4-sincronizacion-realtime.md).
+2. Probar sync con dos navegadores o PC ↔ iPhone (misma guía).
+
+Guías anteriores: auth en [docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md);
+eventos/tareas en [docs/09-sprint-2-eventos-y-tareas.md](docs/09-sprint-2-eventos-y-tareas.md);
+vistas en [docs/10-sprint-3-vistas-calendario.md](docs/10-sprint-3-vistas-calendario.md).
 
 Ver documentación completa en `docs/` y el plan de sprints en
 `docs/prompts/00-prompt-maestro-desarrollo-por-sprints.md`.

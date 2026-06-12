@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { SyncStatusBadge } from '../../components/SyncStatusBadge'
 import { isSupabaseConfigured } from '../../lib/config/env'
 import { getSupabaseClient } from '../../lib/supabase/client'
+import { applyChange } from '../../lib/supabase/realtime'
 import { signOut } from '../auth/authService'
 import { useAuth } from '../auth/useAuth'
 import {
@@ -21,6 +23,7 @@ import {
 } from '../tasks/taskService'
 import type { Task, TaskFormValues } from '../tasks/types'
 import { CalendarShell } from './CalendarShell'
+import { useCalendarRealtime } from './useCalendarRealtime'
 
 interface DefaultCalendar {
   id: string
@@ -41,50 +44,68 @@ export function CalendarPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [signingOut, setSigningOut] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     const supabase = getSupabaseClient()
     if (!supabase) {
       return
     }
-
-    let cancelled = false
-    Promise.all([
-      supabase
-        .from('calendars')
-        .select('id, name, color, is_default')
-        .eq('is_default', true)
-        .maybeSingle(),
-      listEvents(),
-      listTasks(),
-    ])
-      .then(([calendarResult, eventsData, tasksData]) => {
-        if (cancelled) return
-        if (calendarResult.error) {
-          setLoadError(
-            'No se pudo cargar el calendario. ¿Ya aplicaste la migración SQL en Supabase? ' +
-              `(${calendarResult.error.message})`,
-          )
-        } else if (!calendarResult.data) {
-          setLoadError(
-            'No existe calendario default; revisar Sprint 1 (el trigger crea el calendario al registrar un usuario nuevo).',
-          )
-        } else {
-          setCalendar(calendarResult.data)
-          setEvents(eventsData)
-          setTasks(tasksData)
-        }
-        setLoading(false)
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return
-        setLoadError(err instanceof Error ? err.message : 'Error cargando datos.')
-        setLoading(false)
-      })
-    return () => {
-      cancelled = true
+    try {
+      const [calendarResult, eventsData, tasksData] = await Promise.all([
+        supabase
+          .from('calendars')
+          .select('id, name, color, is_default')
+          .eq('is_default', true)
+          .maybeSingle(),
+        listEvents(),
+        listTasks(),
+      ])
+      if (calendarResult.error) {
+        setLoadError(
+          'No se pudo cargar el calendario. ¿Ya aplicaste la migración SQL en Supabase? ' +
+            `(${calendarResult.error.message})`,
+        )
+      } else if (!calendarResult.data) {
+        setLoadError(
+          'No existe calendario default; revisar Sprint 1 (el trigger crea el calendario al registrar un usuario nuevo).',
+        )
+      } else {
+        setCalendar(calendarResult.data)
+        setEvents(eventsData)
+        setTasks(tasksData)
+        setLoadError(null)
+      }
+    } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Error cargando datos.')
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    // Diferido a microtask: la carga resuelve estado en callbacks async
+    queueMicrotask(() => {
+      void loadData()
+    })
+  }, [loadData])
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true)
+    await loadData()
+    setRefreshing(false)
+  }, [loadData])
+
+  const realtimeStatus = useCalendarRealtime({
+    userId: user?.id ?? null,
+    onEventChange: (type, newRow, oldId) =>
+      setEvents((prev) => applyChange(prev, type, newRow, oldId)),
+    onTaskChange: (type, newRow, oldId) =>
+      setTasks((prev) => applyChange(prev, type, newRow, oldId)),
+    onReconnect: () => {
+      void refresh()
+    },
+  })
 
   function reportError(err: unknown, fallback: string) {
     setActionError(err instanceof Error ? err.message : fallback)
@@ -124,13 +145,22 @@ export function CalendarPage() {
             )}
           </p>
         </div>
-        <button
-          onClick={handleSignOut}
-          disabled={signingOut}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
-        >
-          {signingOut ? 'Saliendo…' : 'Cerrar sesión'}
-        </button>
+        <div className="flex items-center gap-2">
+          <SyncStatusBadge
+            status={realtimeStatus}
+            refreshing={refreshing}
+            onRefresh={() => {
+              void refresh()
+            }}
+          />
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
+          >
+            {signingOut ? 'Saliendo…' : 'Cerrar sesión'}
+          </button>
+        </div>
       </div>
 
       {actionError && (
