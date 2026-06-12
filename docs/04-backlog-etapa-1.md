@@ -50,18 +50,18 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 - [x] Implementar verificación de correo (aviso post-registro + estado en /app).
 - [x] Implementar login/logout.
 - [x] Crear calendario por defecto al registrar usuario (trigger en la migración).
-- [ ] **Paso manual pendiente (Oscar): aplicar la migración en Supabase SQL Editor** — ver `docs/08-sprint-1-auth-db.md`.
-- [ ] Probar registro/login real de extremo a extremo tras aplicar la migración.
+- [x] **Aplicar la migración en Supabase SQL Editor** — aplicada y verificada 2026-06-12 (las 5 tablas responden con RLS activo).
+- [x] Probar registro/login real de extremo a extremo — probado por Oscar 2026-06-12: registro, verificación de correo, login, calendario "Personal" visible y logout funcionando.
 
 ## Sprint 2 — Eventos y tareas
 
-- [ ] Crear formulario de evento.
-- [ ] Crear formulario de tarea.
-- [ ] Implementar CRUD de eventos.
-- [ ] Implementar CRUD de tareas.
-- [ ] Implementar estados de tarea.
-- [ ] Implementar prioridad.
-- [ ] Implementar entregable simple.
+- [x] Crear formulario de evento.
+- [x] Crear formulario de tarea.
+- [x] Implementar CRUD de eventos (soft delete con `deleted_at`).
+- [x] Implementar CRUD de tareas (incluye completar y posponer).
+- [x] Implementar estados de tarea.
+- [x] Implementar prioridad (badges en listas).
+- [x] Implementar entregable simple (`requires_deliverable` + descripción).
 
 ## Sprint 3 — Vistas de calendario
 

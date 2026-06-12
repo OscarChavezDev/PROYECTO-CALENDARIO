@@ -73,8 +73,8 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 ## Estado del proyecto
 
 - ✅ Sprint 0 — Preparación del repo y base frontend
-- ✅ Sprint 1 — Auth y base de datos (falta aplicar migración en Supabase, ver abajo)
-- ⬜ Sprint 2 — Eventos y tareas
+- ✅ Sprint 1 — Auth y base de datos (migración aplicada y flujo probado)
+- ✅ Sprint 2 — Eventos y tareas (CRUD completo en /app)
 - ⬜ Sprint 3 — Vistas de calendario
 - ⬜ Sprint 4 — Sincronización Realtime
 - ⬜ Sprint 5 — PWA y offline
@@ -83,10 +83,9 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 
 ### Pasos manuales pendientes (Oscar)
 
-1. **Aplicar la migración SQL** en Supabase SQL Editor — instrucciones paso a paso en
-   [docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md).
-2. Configurar Site URL (`http://localhost:5173`) en Authentication → URL Configuration.
-3. Probar registro → verificación de correo → login (guía en el mismo doc).
+Ninguno por ahora. Guías de referencia: aplicar migraciones y probar auth en
+[docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md); probar eventos/tareas en
+[docs/09-sprint-2-eventos-y-tareas.md](docs/09-sprint-2-eventos-y-tareas.md).
 
 Ver documentación completa en `docs/` y el plan de sprints en
 `docs/prompts/00-prompt-maestro-desarrollo-por-sprints.md`.

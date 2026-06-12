@@ -1,14 +1,4 @@
-import { getSupabaseClient } from '../../lib/supabase/client'
-
-function requireClient() {
-  const supabase = getSupabaseClient()
-  if (!supabase) {
-    throw new Error(
-      'Supabase no está configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en .env.local.',
-    )
-  }
-  return supabase
-}
+import { requireClient } from '../../lib/supabase/requireClient'
 
 /** Traduce los errores comunes de Supabase Auth a mensajes legibles en español. */
 function toReadableError(message: string): string {
