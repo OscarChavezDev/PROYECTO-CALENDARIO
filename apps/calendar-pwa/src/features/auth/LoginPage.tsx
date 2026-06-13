@@ -1,9 +1,14 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { isSupabaseConfigured } from '../../lib/config/env'
 import { SupabaseStatusBanner } from '../../components/SupabaseStatusBanner'
 import { signInWithEmail } from './authService'
 import { useAuth } from './useAuth'
+
+// Cooldown progresivo tras intentos fallidos (defensa anti fuerza-bruta en cliente;
+// Supabase ya limita por IP en el servidor). 2 s por intento, máximo 30 s.
+const COOLDOWN_STEP_MS = 2000
+const COOLDOWN_MAX_MS = 30000
 
 export function LoginPage() {
   const { session, loading } = useAuth()
@@ -12,6 +17,18 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const [cooldownUntil, setCooldownUntil] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (cooldownUntil <= Date.now()) return
+    const id = setInterval(() => setNow(Date.now()), 500)
+    return () => clearInterval(id)
+  }, [cooldownUntil])
+
+  const remainingMs = Math.max(0, cooldownUntil - now)
+  const inCooldown = remainingMs > 0
 
   if (!loading && session) {
     return <Navigate to="/app" replace />
@@ -19,12 +36,17 @@ export function LoginPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (inCooldown) return
     setError(null)
     setSubmitting(true)
     try {
       await signInWithEmail(email, password)
       navigate('/app')
     } catch (err) {
+      const next = attempts + 1
+      setAttempts(next)
+      setNow(Date.now())
+      setCooldownUntil(Date.now() + Math.min(next * COOLDOWN_STEP_MS, COOLDOWN_MAX_MS))
       setError(err instanceof Error ? err.message : 'Error inesperado al iniciar sesión.')
     } finally {
       setSubmitting(false)
@@ -73,10 +95,14 @@ export function LoginPage() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || inCooldown}
           className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
         >
-          {submitting ? 'Entrando…' : 'Entrar'}
+          {submitting
+            ? 'Entrando…'
+            : inCooldown
+              ? `Espera ${Math.ceil(remainingMs / 1000)} s`
+              : 'Entrar'}
         </button>
       </form>
 

@@ -2,6 +2,10 @@ import { localInputToIso } from '../../lib/dates/timezone'
 import { requireClient } from '../../lib/supabase/requireClient'
 import type { Task, TaskFormValues } from './types'
 
+// Columnas explícitas (evita overfetching con select('*'))
+const TASK_COLUMNS =
+  'id, user_id, calendar_id, related_event_id, title, description, due_at, due_date, priority, status, requires_deliverable, deliverable_description, completed_at, external_provider, external_task_id, sync_status, created_at, updated_at, deleted_at'
+
 function toPayload(values: TaskFormValues) {
   return {
     title: values.title.trim(),
@@ -45,11 +49,11 @@ export async function listTasks(): Promise<Task[]> {
   const supabase = requireClient()
   const { data, error } = await supabase
     .from('tasks')
-    .select('*')
+    .select(TASK_COLUMNS)
     .is('deleted_at', null)
     .order('due_at', { ascending: true, nullsFirst: false })
   if (error) throw new Error(`No se pudieron cargar las tareas: ${error.message}`)
-  return (data ?? []) as Task[]
+  return (data ?? []) as unknown as Task[]
 }
 
 export async function createTask(
@@ -61,10 +65,10 @@ export async function createTask(
   const { data, error } = await supabase
     .from('tasks')
     .insert({ user_id: userId, calendar_id: calendarId, ...toPayload(values) })
-    .select()
+    .select(TASK_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo crear la tarea: ${error.message}`)
-  return data as Task
+  return data as unknown as Task
 }
 
 export async function updateTask(id: string, values: TaskFormValues): Promise<Task> {
@@ -73,10 +77,10 @@ export async function updateTask(id: string, values: TaskFormValues): Promise<Ta
     .from('tasks')
     .update(toPayload(values))
     .eq('id', id)
-    .select()
+    .select(TASK_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo actualizar la tarea: ${error.message}`)
-  return data as Task
+  return data as unknown as Task
 }
 
 export async function completeTask(id: string): Promise<Task> {
@@ -85,10 +89,10 @@ export async function completeTask(id: string): Promise<Task> {
     .from('tasks')
     .update({ status: 'completada', completed_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
+    .select(TASK_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo completar la tarea: ${error.message}`)
-  return data as Task
+  return data as unknown as Task
 }
 
 export async function postponeTask(id: string): Promise<Task> {
@@ -97,10 +101,10 @@ export async function postponeTask(id: string): Promise<Task> {
     .from('tasks')
     .update({ status: 'pospuesta', completed_at: null })
     .eq('id', id)
-    .select()
+    .select(TASK_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo posponer la tarea: ${error.message}`)
-  return data as Task
+  return data as unknown as Task
 }
 
 /** Soft delete: marca deleted_at en vez de borrar la fila. */

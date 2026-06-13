@@ -7,7 +7,7 @@
  * - Nunca intercepta peticiones a otros orígenes (Supabase va directo a red).
  */
 
-const CACHE_NAME = 'calendar-pwa-v1'
+const CACHE_NAME = 'calendar-pwa-v2'
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/pwa-192.png', '/pwa-512.png']
 
 self.addEventListener('install', (event) => {
@@ -51,13 +51,15 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Assets con hash y estáticos: cache-first
+  // Assets con hash y estáticos: cache-first.
+  // Solo se cachean respuestas del mismo origen ('basic') y con status OK;
+  // nunca respuestas 'opaque'/'cors' (las de otros orígenes ya se descartan arriba).
   event.respondWith(
     caches.match(request).then(
       (cached) =>
         cached ||
         fetch(request).then((response) => {
-          if (response.ok) {
+          if (response.ok && response.type === 'basic') {
             const copy = response.clone()
             caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
           }

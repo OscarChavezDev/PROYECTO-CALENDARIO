@@ -2,6 +2,10 @@ import { localInputToIso } from '../../lib/dates/timezone'
 import { requireClient } from '../../lib/supabase/requireClient'
 import type { CalendarEvent, EventFormValues } from './types'
 
+// Columnas explícitas (evita overfetching con select('*'))
+const EVENT_COLUMNS =
+  'id, user_id, calendar_id, title, description, starts_at, ends_at, all_day, priority, status, requires_deliverable, deliverable_description, location, external_provider, external_calendar_id, external_event_id, last_external_sync_at, sync_status, created_at, updated_at, deleted_at'
+
 function toPayload(values: EventFormValues) {
   return {
     title: values.title.trim(),
@@ -51,11 +55,11 @@ export async function listEvents(): Promise<CalendarEvent[]> {
   const supabase = requireClient()
   const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select(EVENT_COLUMNS)
     .is('deleted_at', null)
     .order('starts_at', { ascending: true })
   if (error) throw new Error(`No se pudieron cargar los eventos: ${error.message}`)
-  return (data ?? []) as CalendarEvent[]
+  return (data ?? []) as unknown as CalendarEvent[]
 }
 
 export async function createEvent(
@@ -67,10 +71,10 @@ export async function createEvent(
   const { data, error } = await supabase
     .from('events')
     .insert({ user_id: userId, calendar_id: calendarId, ...toPayload(values) })
-    .select()
+    .select(EVENT_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo crear el evento: ${error.message}`)
-  return data as CalendarEvent
+  return data as unknown as CalendarEvent
 }
 
 export async function updateEvent(
@@ -82,10 +86,10 @@ export async function updateEvent(
     .from('events')
     .update(toPayload(values))
     .eq('id', id)
-    .select()
+    .select(EVENT_COLUMNS)
     .single()
   if (error) throw new Error(`No se pudo actualizar el evento: ${error.message}`)
-  return data as CalendarEvent
+  return data as unknown as CalendarEvent
 }
 
 /** Soft delete: marca deleted_at en vez de borrar la fila. */
