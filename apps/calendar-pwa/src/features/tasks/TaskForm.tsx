@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { PRIORITIES, PRIORITY_LABELS, type Priority } from '../../lib/domain/types'
 import { isoToLocalInput } from '../../lib/dates/timezone'
+import { ReminderPicker } from '../notifications/ReminderPicker'
+import { listReminderOffsets } from '../notifications/reminderService'
 import { validateTask } from './taskValidation'
 import type { Task, TaskFormValues } from './types'
 
@@ -25,8 +27,25 @@ export function TaskForm({ initial, onSubmit, onCancel }: TaskFormProps) {
   const [deliverableDescription, setDeliverableDescription] = useState(
     initial?.deliverable_description ?? '',
   )
+  const [reminderOffsets, setReminderOffsets] = useState<number[]>([])
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+
+  // Al editar, precargar los tiempos de notificación ya guardados
+  useEffect(() => {
+    if (!initial) return
+    let cancelled = false
+    listReminderOffsets('task', initial.id)
+      .then((offsets) => {
+        if (!cancelled) setReminderOffsets(offsets)
+      })
+      .catch(() => {
+        /* sin reminders o sin conexión: dejar vacío */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [initial])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -37,6 +56,7 @@ export function TaskForm({ initial, onSubmit, onCancel }: TaskFormProps) {
       priority,
       requiresDeliverable,
       deliverableDescription,
+      reminderOffsets,
     }
     const validationErrors = validateTask(values)
     if (validationErrors.length > 0) {
@@ -54,6 +74,7 @@ export function TaskForm({ initial, onSubmit, onCancel }: TaskFormProps) {
         setPriority('media')
         setRequiresDeliverable(false)
         setDeliverableDescription('')
+        setReminderOffsets([])
       }
     } catch (err) {
       setErrors([err instanceof Error ? err.message : 'Error inesperado al guardar la tarea.'])
@@ -131,6 +152,8 @@ export function TaskForm({ initial, onSubmit, onCancel }: TaskFormProps) {
           />
         </label>
       )}
+
+      <ReminderPicker value={reminderOffsets} onChange={setReminderOffsets} />
 
       {errors.length > 0 && (
         <ul role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">

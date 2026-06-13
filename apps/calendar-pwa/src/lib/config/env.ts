@@ -4,3 +4,7 @@ export const supabaseEnv = {
 }
 
 export const isSupabaseConfigured = Boolean(supabaseEnv.url && supabaseEnv.anonKey)
+
+/** Clave pública VAPID para Web Push (null si no está configurada). */
+export const vapidPublicKey =
+  (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) ?? null

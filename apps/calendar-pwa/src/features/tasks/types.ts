@@ -48,4 +48,6 @@ export interface TaskFormValues {
   priority: Priority
   requiresDeliverable: boolean
   deliverableDescription: string
+  /** Tiempos de notificación elegidos (minutos antes de la fecha límite). */
+  reminderOffsets?: number[]
 }

@@ -7,7 +7,7 @@ describe('EventForm', () => {
     render(<EventForm onSubmit={vi.fn()} />)
 
     expect(screen.getByLabelText(/título/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/inicio/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^inicio$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^fin$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/prioridad/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/estado/i)).toBeInTheDocument()
@@ -20,7 +20,7 @@ describe('EventForm', () => {
     render(<EventForm onSubmit={onSubmit} />)
 
     fireEvent.change(screen.getByLabelText(/título/i), { target: { value: 'Demo' } })
-    fireEvent.change(screen.getByLabelText(/inicio/i), {
+    fireEvent.change(screen.getByLabelText(/^inicio$/i), {
       target: { value: '2026-06-15T11:00' },
     })
     fireEvent.change(screen.getByLabelText(/^fin$/i), {

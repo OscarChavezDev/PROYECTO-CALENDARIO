@@ -149,7 +149,7 @@ export function CalendarShell(props: CalendarShellProps) {
             aria-label="Anterior"
             className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            ←
+            <i className="fi fi-rr-angle-left"></i>
           </button>
           <button
             onClick={() => setAnchorKey(todayKey())}
@@ -162,7 +162,7 @@ export function CalendarShell(props: CalendarShellProps) {
             aria-label="Siguiente"
             className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            →
+            <i className="fi fi-rr-angle-right"></i>
           </button>
           <span className="ml-1 text-sm font-medium capitalize text-slate-600">{navLabel}</span>
         </div>
@@ -176,7 +176,7 @@ export function CalendarShell(props: CalendarShellProps) {
           }
           className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-700"
         >
-          ➕ Evento
+          <i className="fi fi-rr-plus mr-1 align-middle"></i> Evento
         </button>
         <button
           onClick={() =>
@@ -184,7 +184,7 @@ export function CalendarShell(props: CalendarShellProps) {
           }
           className="rounded-md bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-teal-700"
         >
-          ➕ Tarea
+          <i className="fi fi-rr-plus mr-1 align-middle"></i> Tarea
         </button>
       </div>
 

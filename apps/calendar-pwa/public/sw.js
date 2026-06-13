@@ -66,3 +66,36 @@ self.addEventListener('fetch', (event) => {
     ),
   )
 })
+
+// Web Push: mostrar notificación al recibir un push
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+  let data = {}
+  try {
+    data = event.data.json()
+  } catch {
+    data = { title: 'Recordatorio', body: event.data.text() }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Recordatorio', {
+      body: data.body ?? '',
+      icon: '/pwa-192.png',
+      badge: '/pwa-192.png',
+      tag: data.tag ?? 'reminder',
+      data: { url: data.url ?? '/app' },
+    }),
+  )
+})
+
+// Al tocar la notificación, enfocar/abrir la app en la ruta indicada
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((list) => {
+      const url = event.notification.data?.url ?? '/app'
+      const existing = list.find((c) => c.url.includes(url) && 'focus' in c)
+      if (existing) return existing.focus()
+      return clients.openWindow(url)
+    }),
+  )
+})

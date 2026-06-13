@@ -11,7 +11,7 @@ export function OfflineBanner() {
       role="status"
       className="bg-amber-100 px-4 py-2 text-center text-sm font-medium text-amber-900"
     >
-      📡 Sin conexión: estás viendo datos guardados. Tus cambios se sincronizarán al
+      <i className="fi fi-rr-wifi-slash mr-1 align-middle"></i> Sin conexión: estás viendo datos guardados. Tus cambios se sincronizarán al
       recuperar la conexión.
     </div>
   )

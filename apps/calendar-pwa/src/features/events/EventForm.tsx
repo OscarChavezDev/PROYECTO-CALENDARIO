@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { PRIORITIES, PRIORITY_LABELS, type Priority } from '../../lib/domain/types'
 import { isoToLocalInput } from '../../lib/dates/timezone'
+import { ReminderPicker } from '../notifications/ReminderPicker'
+import { listReminderOffsets } from '../notifications/reminderService'
 import { validateEvent } from './eventValidation'
 import {
   EVENT_STATUSES,
@@ -35,8 +37,25 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
     initial?.deliverable_description ?? '',
   )
   const [location, setLocation] = useState(initial?.location ?? '')
+  const [reminderOffsets, setReminderOffsets] = useState<number[]>([])
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+
+  // Al editar, precargar los tiempos de notificación ya guardados
+  useEffect(() => {
+    if (!initial) return
+    let cancelled = false
+    listReminderOffsets('event', initial.id)
+      .then((offsets) => {
+        if (!cancelled) setReminderOffsets(offsets)
+      })
+      .catch(() => {
+        /* sin reminders o sin conexión: dejar vacío */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [initial])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -51,6 +70,7 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
       requiresDeliverable,
       deliverableDescription,
       location,
+      reminderOffsets,
     }
     const validationErrors = validateEvent(values)
     if (validationErrors.length > 0) {
@@ -73,6 +93,7 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
         setRequiresDeliverable(false)
         setDeliverableDescription('')
         setLocation('')
+        setReminderOffsets([])
       }
     } catch (err) {
       setErrors([err instanceof Error ? err.message : 'Error inesperado al guardar el evento.'])
@@ -197,6 +218,8 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
           />
         </label>
       )}
+
+      <ReminderPicker value={reminderOffsets} onChange={setReminderOffsets} />
 
       {errors.length > 0 && (
         <ul role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">

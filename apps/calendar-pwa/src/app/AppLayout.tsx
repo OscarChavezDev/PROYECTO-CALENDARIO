@@ -14,15 +14,20 @@ export function AppLayout() {
     <div className="flex min-h-dvh flex-col bg-slate-100">
       <header className="bg-slate-900 px-4 py-3">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-2">
-          <span className="text-base font-semibold text-white">📅 Calendario</span>
+          <span className="text-base font-semibold text-white"><i className="fi fi-rr-calendar mr-1.5 align-middle"></i>Calendario</span>
           <nav className="flex gap-1">
             <NavLink to="/" end className={navLinkClass}>
               Inicio
             </NavLink>
             {session ? (
-              <NavLink to="/app" className={navLinkClass}>
-                Mi calendario
-              </NavLink>
+              <>
+                <NavLink to="/app" className={navLinkClass}>
+                  Mi calendario
+                </NavLink>
+                <NavLink to="/ajustes" className={navLinkClass}>
+                  Ajustes
+                </NavLink>
+              </>
             ) : (
               <>
                 <NavLink to="/login" className={navLinkClass}>

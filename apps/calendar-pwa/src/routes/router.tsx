@@ -5,6 +5,7 @@ import { LoginPage } from '../features/auth/LoginPage'
 import { RegisterPage } from '../features/auth/RegisterPage'
 import { ProtectedRoute } from '../features/auth/ProtectedRoute'
 import { CalendarPage } from '../features/calendar/CalendarPage'
+import { NotificationSettings } from '../features/notifications/NotificationSettings'
 
 export const router = createBrowserRouter([
   {
@@ -15,7 +16,10 @@ export const router = createBrowserRouter([
       { path: '/register', element: <RegisterPage /> },
       {
         element: <ProtectedRoute />,
-        children: [{ path: '/app', element: <CalendarPage /> }],
+        children: [
+          { path: '/app', element: <CalendarPage /> },
+          { path: '/ajustes', element: <NotificationSettings /> },
+        ],
       },
     ],
   },

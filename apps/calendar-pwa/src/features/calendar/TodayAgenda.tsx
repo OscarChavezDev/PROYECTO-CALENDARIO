@@ -41,7 +41,7 @@ export function TodayAgenda({
         </h2>
         {pending.length === 0 ? (
           <p className="rounded-md bg-white p-4 text-sm text-slate-500 shadow-sm">
-            No tienes eventos ni tareas pendientes para hoy. 🎉
+            No tienes eventos ni tareas pendientes para hoy. <i className="fi fi-rr-check-circle ml-1 align-middle text-green-500"></i>
           </p>
         ) : (
           <div className="flex flex-col gap-2">

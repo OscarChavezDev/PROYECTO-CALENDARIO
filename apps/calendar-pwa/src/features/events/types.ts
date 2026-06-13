@@ -47,4 +47,6 @@ export interface EventFormValues {
   requiresDeliverable: boolean
   deliverableDescription: string
   location: string
+  /** Tiempos de notificación elegidos (minutos antes del inicio). */
+  reminderOffsets?: number[]
 }

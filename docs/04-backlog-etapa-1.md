@@ -92,12 +92,15 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 
 ## Sprint 6 — Notificaciones
 
-- [ ] Implementar tabla `push_subscriptions`.
-- [ ] Solicitar permiso de notificaciones.
-- [ ] Guardar suscripción Web Push.
-- [ ] Crear prueba manual de Web Push.
-- [ ] Probar en iPhone real con PWA instalada.
-- [ ] Agregar correo de respaldo para eventos/tareas críticas.
+- [x] Implementar tabla `push_subscriptions` (migración 202606130001 con RLS).
+- [x] Selector de tiempos de recordatorio en eventos/tareas (0/10/15/20/30/60 min).
+- [x] Solicitar permiso de notificaciones (pantalla Ajustes).
+- [x] Guardar suscripción Web Push (pushService + upsert en Supabase).
+- [x] Crear prueba manual de Web Push (Edge Function send-test-push + botón).
+- [ ] Aplicar migración + desplegar Edge Function + secrets (manual, Oscar).
+- [ ] Probar en iPhone real con PWA instalada (manual, Oscar).
+- [ ] Envío programado de reminders en su `remind_at` (cron — Sprint 7/Etapa 2).
+- [ ] Agregar correo de respaldo para eventos/tareas críticas (documentado, sin activar).
 
 ## Sprint 7 — Validación MVP
 

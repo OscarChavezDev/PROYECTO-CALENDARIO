@@ -14,6 +14,11 @@ import {
 import { processQueue } from '../../lib/offline/syncQueue'
 import { getSupabaseClient } from '../../lib/supabase/client'
 import { applyChange } from '../../lib/supabase/realtime'
+import {
+  createReminders,
+  deleteReminders,
+  replaceReminders,
+} from '../notifications/reminderService'
 import { signOut } from '../auth/authService'
 import { useAuth } from '../auth/useAuth'
 import {
@@ -181,6 +186,16 @@ export function CalendarPage() {
     setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
   }
 
+  // Los recordatorios solo se gestionan con conexión (necesitan el id real del servidor).
+  // Un fallo aquí no debe romper el guardado del evento/tarea.
+  async function safeReminders(action: () => Promise<void>) {
+    try {
+      await action()
+    } catch (err) {
+      reportError(err, 'El evento se guardó, pero no se pudieron guardar los recordatorios.')
+    }
+  }
+
   async function handleSignOut() {
     setSigningOut(true)
     try {
@@ -210,6 +225,15 @@ export function CalendarPage() {
     }
     const created = await createEvent(user.id, calendar.id, values)
     setEvents((prev) => [...prev, created])
+    await safeReminders(() =>
+      createReminders({
+        entityId: created.id,
+        entityType: 'event',
+        userId: user.id,
+        anchorAt: created.starts_at,
+        offsets: values.reminderOffsets ?? [],
+      }),
+    )
   }
 
   async function handleUpdateEvent(id: string, values: EventFormValues) {
@@ -233,6 +257,17 @@ export function CalendarPage() {
     }
     const updated = await updateEvent(id, values)
     setEvents((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
+    if (user) {
+      await safeReminders(() =>
+        replaceReminders({
+          entityId: updated.id,
+          entityType: 'event',
+          userId: user.id,
+          anchorAt: updated.starts_at,
+          offsets: values.reminderOffsets ?? [],
+        }),
+      )
+    }
   }
 
   async function handleDeleteEvent(event: CalendarEvent) {
@@ -280,6 +315,17 @@ export function CalendarPage() {
     }
     const created = await createTask(user.id, calendar.id, values)
     setTasks((prev) => [...prev, created])
+    if (created.due_at) {
+      await safeReminders(() =>
+        createReminders({
+          entityId: created.id,
+          entityType: 'task',
+          userId: user.id,
+          anchorAt: created.due_at!,
+          offsets: values.reminderOffsets ?? [],
+        }),
+      )
+    }
   }
 
   async function handleUpdateTask(id: string, values: TaskFormValues) {
@@ -301,7 +347,21 @@ export function CalendarPage() {
       refreshPendingCount()
       return
     }
-    replaceTaskInState(await updateTask(id, values))
+    const updated = await updateTask(id, values)
+    replaceTaskInState(updated)
+    if (user) {
+      await safeReminders(() =>
+        updated.due_at
+          ? replaceReminders({
+              entityId: updated.id,
+              entityType: 'task',
+              userId: user.id,
+              anchorAt: updated.due_at,
+              offsets: values.reminderOffsets ?? [],
+            })
+          : deleteReminders('task', updated.id),
+      )
+    }
   }
 
   async function handleCompleteTask(task: Task) {

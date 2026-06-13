@@ -69,10 +69,10 @@ export function CalendarItemCard({
 
       {(event?.location || event?.requires_deliverable || task?.requires_deliverable) && (
         <p className="mt-1 text-xs text-slate-500">
-          {event?.location && <>📍 {event.location} </>}
+          {event?.location && <><i className="fi fi-rr-marker mr-0.5 align-middle"></i> {event.location} </>}
           {(event?.requires_deliverable || task?.requires_deliverable) && (
             <>
-              📎 {event?.deliverable_description ?? task?.deliverable_description ?? 'Entregable'}
+              <i className="fi fi-rr-clip mr-0.5 align-middle"></i> {event?.deliverable_description ?? task?.deliverable_description ?? 'Entregable'}
             </>
           )}
         </p>

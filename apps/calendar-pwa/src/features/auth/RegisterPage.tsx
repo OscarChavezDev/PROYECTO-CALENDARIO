@@ -48,7 +48,7 @@ export function RegisterPage() {
     return (
       <section className="mx-auto w-full max-w-sm">
         <div className="rounded-lg border border-green-300 bg-green-50 p-6 text-green-800">
-          <h1 className="text-lg font-bold">Revisa tu correo 📬</h1>
+          <h1 className="text-lg font-bold">Revisa tu correo <i className="fi fi-rr-envelope ml-1 align-middle"></i></h1>
           <p className="mt-2 text-sm">
             Te enviamos un enlace de verificación a <strong>{email}</strong>. Ábrelo para
             activar tu cuenta y luego inicia sesión.
