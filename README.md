@@ -85,8 +85,8 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 
 1. Probar el flujo offline en PC (guía en
    [docs/12-sprint-5-pwa-offline.md](docs/12-sprint-5-pwa-offline.md)).
-2. Para instalar la PWA en iPhone se necesita un despliegue HTTPS (Vercel/Netlify free);
-   pendiente de tu autorización — se propone para el Sprint 6/7.
+2. **Desplegar en Vercel** (plan Free, HTTPS) para instalar la PWA en iPhone — guía
+   paso a paso en [docs/13-despliegue-vercel.md](docs/13-despliegue-vercel.md).
 
 Guías anteriores: auth en [docs/08-sprint-1-auth-db.md](docs/08-sprint-1-auth-db.md);
 eventos/tareas en [docs/09-sprint-2-eventos-y-tareas.md](docs/09-sprint-2-eventos-y-tareas.md);
