@@ -104,12 +104,13 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 
 ## Sprint 7 — Validación MVP
 
-- [ ] Ejecutar criterios de aceptación.
-- [ ] Hacer pruebas en PC.
-- [ ] Hacer pruebas en iPhone real.
-- [ ] Registrar bugs.
-- [ ] Ajustar UX mobile-first.
-- [ ] Preparar lista de mejoras para Etapa 2.
+- [x] Ejecutar criterios de aceptación (16/16 — ver docs/15).
+- [x] Hacer pruebas en PC.
+- [x] Hacer pruebas en iPhone real.
+- [x] Registrar bugs (sin bloqueantes; 2 observaciones menores).
+- [x] Ajustar UX mobile-first (iconos + responsive validados).
+- [x] Preparar lista de mejoras para Etapa 2.
+- [x] **MVP Etapa 1: APROBADO con observaciones menores** (docs/15-sprint-7-validacion-mvp.md).
 
 ## Primer objetivo concreto
 

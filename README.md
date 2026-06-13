@@ -79,7 +79,7 @@ Las variables server-only (service role key, VAPID, SMTP) viven en el
 - ✅ Sprint 4 — Sincronización Realtime (migración 0002 aplicada y probado PC↔iPhone)
 - ✅ Sprint 5 — PWA y offline (instalable, lectura offline y cola de cambios)
 - ✅ Sprint 6 — Notificaciones (selector de recordatorios + Web Push)
-- ⬜ Sprint 7 — Validación MVP
+- ✅ Sprint 7 — Validación MVP → **MVP Etapa 1 APROBADO** ([informe](docs/15-sprint-7-validacion-mvp.md))
 
 ### Pasos manuales pendientes (Oscar)
 
