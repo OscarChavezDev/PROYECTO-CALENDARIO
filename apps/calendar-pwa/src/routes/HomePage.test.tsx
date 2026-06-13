@@ -18,14 +18,16 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: /mi calendario/i })).toBeInTheDocument()
   })
 
-  it('muestra el estado de Supabase sin asumir un estado fijo', () => {
+  it('no muestra el aviso técnico de Supabase cuando está configurado', () => {
+    // En este entorno Supabase está configurado (.env.local): el banner verde
+    // de "configurado" ya no debe mostrarse al usuario; solo aparecería el aviso
+    // ámbar si faltara configuración.
     render(
       <MemoryRouter>
         <HomePage />
       </MemoryRouter>,
     )
 
-    // No depende del .env.local real: acepta configurado o no configurado
-    expect(screen.getByText(/supabase (configurado|aún no configurado)/i)).toBeInTheDocument()
+    expect(screen.queryByText(/supabase configurado/i)).not.toBeInTheDocument()
   })
 })

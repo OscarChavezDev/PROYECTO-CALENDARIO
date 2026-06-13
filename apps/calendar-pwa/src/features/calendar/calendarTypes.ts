@@ -22,4 +22,4 @@ export interface CalendarItem {
   task?: Task
 }
 
-export type CalendarViewId = 'hoy' | 'dia' | 'semana' | 'mes'
+export type CalendarViewId = 'hoy' | 'dia' | '3 dias' | 'semana' | 'mes'

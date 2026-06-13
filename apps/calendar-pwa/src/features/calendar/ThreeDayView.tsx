@@ -1,9 +1,10 @@
-import { weekKeys } from '../../lib/dates/dateUtils'
+import { addDays } from '../../lib/dates/dateUtils'
 import { DayGroupedList } from './DayGroupedList'
 import type { CalendarItemActions } from './CalendarItemCard'
 import type { CalendarItem, ItemFilter } from './calendarTypes'
 
-export function WeekView({
+/** Vista de 3 días consecutivos a partir de la fecha ancla. */
+export function ThreeDayView({
   items,
   anchorKey,
   filter,
@@ -16,10 +17,11 @@ export function WeekView({
   actions: CalendarItemActions
   onSelectDay: (dayKey: string) => void
 }) {
+  const days = [anchorKey, addDays(anchorKey, 1), addDays(anchorKey, 2)]
   return (
     <DayGroupedList
       items={items}
-      days={weekKeys(anchorKey)}
+      days={days}
       filter={filter}
       actions={actions}
       onSelectDay={onSelectDay}

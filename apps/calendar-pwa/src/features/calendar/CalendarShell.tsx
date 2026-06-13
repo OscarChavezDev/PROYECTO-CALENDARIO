@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   addDays,
   addMonths,
@@ -17,6 +17,7 @@ import type { CalendarViewId, ItemFilter } from './calendarTypes'
 import { buildItems } from './calendarUtils'
 import { DayView } from './DayView'
 import { MonthView } from './MonthView'
+import { ThreeDayView } from './ThreeDayView'
 import { TodayAgenda } from './TodayAgenda'
 import { WeekView } from './WeekView'
 
@@ -41,6 +42,7 @@ type FormPanel =
 const VIEWS: Array<{ id: CalendarViewId; label: string }> = [
   { id: 'hoy', label: 'Hoy' },
   { id: 'dia', label: 'Día' },
+  { id: '3 dias', label: '3 días' },
   { id: 'semana', label: 'Semana' },
   { id: 'mes', label: 'Mes' },
 ]
@@ -56,11 +58,28 @@ export function CalendarShell(props: CalendarShellProps) {
   const [anchorKey, setAnchorKey] = useState(todayKey)
   const [filter, setFilter] = useState<ItemFilter>('todos')
   const [panel, setPanel] = useState<FormPanel>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const items = useMemo(
     () => buildItems(props.events, props.tasks),
     [props.events, props.tasks],
   )
+
+  // Al abrir el formulario, llevarlo a la vista para que se note que se desplegó
+  useEffect(() => {
+    if (panel) {
+      panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [panel])
+
+  // Cambiar de vista cierra cualquier formulario abierto
+  function changeView(next: CalendarViewId) {
+    setView(next)
+    setPanel(null)
+  }
+
+  const eventPanelOpen = panel?.type === 'event' && !panel.editing
+  const taskPanelOpen = panel?.type === 'task' && !panel.editing
 
   const actions: CalendarItemActions = {
     onEditEvent: (event) => setPanel({ type: 'event', editing: event }),
@@ -73,6 +92,7 @@ export function CalendarShell(props: CalendarShellProps) {
 
   function navigate(direction: -1 | 1) {
     if (view === 'dia') setAnchorKey((k) => addDays(k, direction))
+    else if (view === '3 dias') setAnchorKey((k) => addDays(k, direction * 3))
     else if (view === 'semana') setAnchorKey((k) => addDays(k, direction * 7))
     else if (view === 'mes') setAnchorKey((k) => addMonths(k, direction))
   }
@@ -80,6 +100,7 @@ export function CalendarShell(props: CalendarShellProps) {
   function goToDay(dayKey: string) {
     setAnchorKey(dayKey)
     setView('dia')
+    setPanel(null)
   }
 
   async function handleEventSubmit(values: EventFormValues) {
@@ -104,11 +125,13 @@ export function CalendarShell(props: CalendarShellProps) {
   const navLabel =
     view === 'dia'
       ? formatDayHeading(anchorKey)
-      : view === 'semana'
-        ? `${formatDayShort(week[0])} – ${formatDayShort(week[6])}`
-        : view === 'mes'
-          ? formatMonthHeading(anchorKey)
-          : null
+      : view === '3 dias'
+        ? `${formatDayShort(anchorKey)} – ${formatDayShort(addDays(anchorKey, 2))}`
+        : view === 'semana'
+          ? `${formatDayShort(week[0])} – ${formatDayShort(week[6])}`
+          : view === 'mes'
+            ? formatMonthHeading(anchorKey)
+            : null
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,7 +141,7 @@ export function CalendarShell(props: CalendarShellProps) {
           {VIEWS.map(({ id, label }) => (
             <button
               key={id}
-              onClick={() => setView(id)}
+              onClick={() => changeView(id)}
               className={`rounded-md px-3 py-1 text-sm font-medium transition ${
                 view === id ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-slate-100'
               }`}
@@ -168,58 +191,77 @@ export function CalendarShell(props: CalendarShellProps) {
         </div>
       )}
 
-      {/* CTA crear */}
+      {/* CTA crear (resaltado cuando su formulario está abierto) */}
       <div className="flex gap-2">
         <button
-          onClick={() =>
-            setPanel(panel?.type === 'event' && !panel.editing ? null : { type: 'event', editing: null })
-          }
-          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-700"
+          onClick={() => setPanel(eventPanelOpen ? null : { type: 'event', editing: null })}
+          aria-expanded={eventPanelOpen}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium text-white transition ${
+            eventPanelOpen
+              ? 'bg-indigo-800 ring-2 ring-indigo-300'
+              : 'bg-indigo-600 hover:bg-indigo-700'
+          }`}
         >
-          <i className="fi fi-rr-plus mr-1 align-middle"></i> Evento
+          <i className={`fi ${eventPanelOpen ? 'fi-rr-cross-small' : 'fi-rr-plus'} mr-1 align-middle`}></i>
+          Evento
         </button>
         <button
-          onClick={() =>
-            setPanel(panel?.type === 'task' && !panel.editing ? null : { type: 'task', editing: null })
-          }
-          className="rounded-md bg-teal-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-teal-700"
+          onClick={() => setPanel(taskPanelOpen ? null : { type: 'task', editing: null })}
+          aria-expanded={taskPanelOpen}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium text-white transition ${
+            taskPanelOpen ? 'bg-teal-800 ring-2 ring-teal-300' : 'bg-teal-600 hover:bg-teal-700'
+          }`}
         >
-          <i className="fi fi-rr-plus mr-1 align-middle"></i> Tarea
+          <i className={`fi ${taskPanelOpen ? 'fi-rr-cross-small' : 'fi-rr-plus'} mr-1 align-middle`}></i>
+          Tarea
         </button>
       </div>
 
       {/* Panel crear/editar */}
-      {panel?.type === 'event' && (
-        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-base font-semibold text-slate-900">
-            {panel.editing ? `Editar evento: ${panel.editing.title}` : 'Crear evento'}
-          </h2>
-          <EventForm
-            key={panel.editing?.id ?? 'new-event'}
-            initial={panel.editing}
-            onSubmit={handleEventSubmit}
-            onCancel={() => setPanel(null)}
-          />
-        </section>
-      )}
-      {panel?.type === 'task' && (
-        <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-base font-semibold text-slate-900">
-            {panel.editing ? `Editar tarea: ${panel.editing.title}` : 'Crear tarea'}
-          </h2>
-          <TaskForm
-            key={panel.editing?.id ?? 'new-task'}
-            initial={panel.editing}
-            onSubmit={handleTaskSubmit}
-            onCancel={() => setPanel(null)}
-          />
-        </section>
-      )}
+      <div ref={panelRef} className="scroll-mt-4">
+        {panel?.type === 'event' && (
+          <section className="rounded-lg border-2 border-indigo-300 bg-white p-4 shadow-md ring-1 ring-indigo-100">
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900">
+              <i className="fi fi-rr-calendar-plus text-indigo-600"></i>
+              {panel.editing ? `Editar evento: ${panel.editing.title}` : 'Nuevo evento'}
+            </h2>
+            <EventForm
+              key={panel.editing?.id ?? 'new-event'}
+              initial={panel.editing}
+              onSubmit={handleEventSubmit}
+              onCancel={() => setPanel(null)}
+            />
+          </section>
+        )}
+        {panel?.type === 'task' && (
+          <section className="rounded-lg border-2 border-teal-300 bg-white p-4 shadow-md ring-1 ring-teal-100">
+            <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900">
+              <i className="fi fi-rr-checkbox text-teal-600"></i>
+              {panel.editing ? `Editar tarea: ${panel.editing.title}` : 'Nueva tarea'}
+            </h2>
+            <TaskForm
+              key={panel.editing?.id ?? 'new-task'}
+              initial={panel.editing}
+              onSubmit={handleTaskSubmit}
+              onCancel={() => setPanel(null)}
+            />
+          </section>
+        )}
+      </div>
 
       {/* Vista activa */}
       {view === 'hoy' && <TodayAgenda items={items} tasks={props.tasks} actions={actions} />}
       {view === 'dia' && (
         <DayView items={items} dayKey={anchorKey} filter={filter} actions={actions} />
+      )}
+      {view === '3 dias' && (
+        <ThreeDayView
+          items={items}
+          anchorKey={anchorKey}
+          filter={filter}
+          actions={actions}
+          onSelectDay={goToDay}
+        />
       )}
       {view === 'semana' && (
         <WeekView
