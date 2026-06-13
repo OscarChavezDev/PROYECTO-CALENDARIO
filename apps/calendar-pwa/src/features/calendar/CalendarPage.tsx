@@ -406,13 +406,27 @@ export function CalendarPage() {
         replaceTaskInState({
           ...task,
           status: 'pospuesta',
+          due_at: new Date(Date.now() + 10 * 60_000).toISOString(),
           completed_at: null,
           updated_at: new Date().toISOString(),
         })
         refreshPendingCount()
         return
       }
-      replaceTaskInState(await postponeTask(task.id))
+      const updated = await postponeTask(task.id)
+      replaceTaskInState(updated)
+      // Snooze: volver a recordar en la nueva hora (10 min después)
+      if (user && updated.due_at) {
+        await safeReminders(() =>
+          createReminders({
+            entityId: updated.id,
+            entityType: 'task',
+            userId: user.id,
+            anchorAt: updated.due_at!,
+            offsets: [0],
+          }),
+        )
+      }
     } catch (err) {
       reportError(err, 'Error posponiendo la tarea.')
     }

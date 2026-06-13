@@ -56,6 +56,22 @@ export async function listTasks(): Promise<Task[]> {
   return (data ?? []) as unknown as Task[]
 }
 
+/** Una tarea por id (no borrada), o null si no existe. */
+export async function getTask(id: string): Promise<Task | null> {
+  const supabase = requireClient()
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(TASK_COLUMNS)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle()
+  if (error) throw new Error(`No se pudo cargar la tarea: ${error.message}`)
+  return (data as unknown as Task) ?? null
+}
+
+/** Minutos que se pospone una tarea (snooze). */
+export const POSTPONE_MINUTES = 10
+
 export async function createTask(
   userId: string,
   calendarId: string,
@@ -95,11 +111,29 @@ export async function completeTask(id: string): Promise<Task> {
   return data as unknown as Task
 }
 
+/**
+ * Posponer = snooze: mueve la fecha límite 10 minutos hacia adelante.
+ * Si la tarea ya estaba vencida, cuenta desde ahora; si aún no vencía, desde su due_at.
+ * Devuelve la tarea con el nuevo due_at para poder re-crear su recordatorio.
+ */
 export async function postponeTask(id: string): Promise<Task> {
   const supabase = requireClient()
+  const { data: current, error: readError } = await supabase
+    .from('tasks')
+    .select('due_at')
+    .eq('id', id)
+    .single()
+  if (readError) throw new Error(`No se pudo posponer la tarea: ${readError.message}`)
+
+  const now = Date.now()
+  const currentDue = (current as { due_at: string | null }).due_at
+  const base =
+    currentDue && new Date(currentDue).getTime() > now ? new Date(currentDue).getTime() : now
+  const newDueAt = new Date(base + POSTPONE_MINUTES * 60_000).toISOString()
+
   const { data, error } = await supabase
     .from('tasks')
-    .update({ status: 'pospuesta', completed_at: null })
+    .update({ status: 'pospuesta', due_at: newDueAt, completed_at: null })
     .eq('id', id)
     .select(TASK_COLUMNS)
     .single()

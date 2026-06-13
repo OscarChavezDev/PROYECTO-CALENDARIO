@@ -89,15 +89,30 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// Al tocar la notificación, enfocar/abrir la app en la ruta indicada
+// Al tocar la notificación, abrir/enfocar la app y navegar al detalle indicado
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
+  const url = event.notification.data?.url ?? '/app'
+  const target = new URL(url, self.location.origin).href
+
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((list) => {
-      const url = event.notification.data?.url ?? '/app'
-      const existing = list.find((c) => c.url.includes(url) && 'focus' in c)
-      if (existing) return existing.focus()
-      return clients.openWindow(url)
-    }),
+    (async () => {
+      const list = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+      for (const client of list) {
+        if ('focus' in client) {
+          await client.focus()
+          // Llevar la ventana ya abierta a la pantalla de detalle
+          if (client.url !== target && 'navigate' in client) {
+            try {
+              await client.navigate(target)
+            } catch {
+              /* algunos navegadores no permiten navigate; se ignora */
+            }
+          }
+          return
+        }
+      }
+      await clients.openWindow(target)
+    })(),
   )
 })

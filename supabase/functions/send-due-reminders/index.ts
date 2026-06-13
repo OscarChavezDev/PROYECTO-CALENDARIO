@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
   for (const r of reminders) {
     let title = 'Recordatorio'
     let body = ''
+    let url = '/app'
     let cancel = false
 
     if (r.event_id) {
@@ -130,20 +131,22 @@ Deno.serve(async (req) => {
       if (!e || e.deleted_at || e.status === 'cancelado') {
         cancel = true
       } else {
-        title = `⏰ ${e.title as string}`
+        title = e.title as string
         body = e.all_day
-          ? 'Es hoy'
-          : `Comienza a las ${timeFmt.format(new Date(e.starts_at as string))}`
+          ? 'Evento · todo el día'
+          : `Evento · comienza a las ${timeFmt.format(new Date(e.starts_at as string))}`
+        url = `/evento/${r.event_id}`
       }
     } else if (r.task_id) {
       const t = tasks.get(r.task_id)
       if (!t || t.deleted_at || t.status === 'completada' || t.status === 'cancelada') {
         cancel = true
       } else {
-        title = `✅ ${t.title as string}`
+        title = t.title as string
         body = t.due_at
-          ? `Vence a las ${timeFmt.format(new Date(t.due_at as string))}`
+          ? `Tarea · vence a las ${timeFmt.format(new Date(t.due_at as string))}`
           : 'Tarea pendiente'
+        url = `/tarea/${r.task_id}`
       }
     }
 
@@ -164,7 +167,7 @@ Deno.serve(async (req) => {
       continue
     }
 
-    const payload = JSON.stringify({ title, body, url: '/app', tag: `reminder-${r.id}` })
+    const payload = JSON.stringify({ title, body, url, tag: `reminder-${r.id}` })
     let ok = 0
     for (const s of subs) {
       try {

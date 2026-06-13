@@ -62,6 +62,19 @@ export async function listEvents(): Promise<CalendarEvent[]> {
   return (data ?? []) as unknown as CalendarEvent[]
 }
 
+/** Un evento por id (no borrado), o null si no existe. */
+export async function getEvent(id: string): Promise<CalendarEvent | null> {
+  const supabase = requireClient()
+  const { data, error } = await supabase
+    .from('events')
+    .select(EVENT_COLUMNS)
+    .eq('id', id)
+    .is('deleted_at', null)
+    .maybeSingle()
+  if (error) throw new Error(`No se pudo cargar el evento: ${error.message}`)
+  return (data as unknown as CalendarEvent) ?? null
+}
+
 export async function createEvent(
   userId: string,
   calendarId: string,
