@@ -15,11 +15,10 @@ import type { Task, TaskFormValues } from '../tasks/types'
 import type { CalendarItemActions } from './CalendarItemCard'
 import type { CalendarViewId, ItemFilter } from './calendarTypes'
 import { buildItems } from './calendarUtils'
-import { DayView } from './DayView'
+import type { CalendarItem } from './calendarTypes'
 import { MonthView } from './MonthView'
-import { ThreeDayView } from './ThreeDayView'
+import { TimeGrid } from './TimeGrid'
 import { TodayAgenda } from './TodayAgenda'
-import { WeekView } from './WeekView'
 
 interface CalendarShellProps {
   events: CalendarEvent[]
@@ -88,6 +87,12 @@ export function CalendarShell(props: CalendarShellProps) {
     onDeleteTask: props.onDeleteTask,
     onCompleteTask: props.onCompleteTask,
     onPostponeTask: props.onPostponeTask,
+  }
+
+  // Tocar un bloque del calendario abre su formulario de edición
+  function openItem(item: CalendarItem) {
+    if (item.event) setPanel({ type: 'event', editing: item.event })
+    else if (item.task) setPanel({ type: 'task', editing: item.task })
   }
 
   function navigate(direction: -1 | 1) {
@@ -252,23 +257,29 @@ export function CalendarShell(props: CalendarShellProps) {
       {/* Vista activa */}
       {view === 'hoy' && <TodayAgenda items={items} tasks={props.tasks} actions={actions} />}
       {view === 'dia' && (
-        <DayView items={items} dayKey={anchorKey} filter={filter} actions={actions} />
+        <TimeGrid
+          items={items}
+          days={[anchorKey]}
+          filter={filter}
+          onItemClick={openItem}
+          onSelectDay={goToDay}
+        />
       )}
       {view === '3 dias' && (
-        <ThreeDayView
+        <TimeGrid
           items={items}
-          anchorKey={anchorKey}
+          days={[anchorKey, addDays(anchorKey, 1), addDays(anchorKey, 2)]}
           filter={filter}
-          actions={actions}
+          onItemClick={openItem}
           onSelectDay={goToDay}
         />
       )}
       {view === 'semana' && (
-        <WeekView
+        <TimeGrid
           items={items}
-          anchorKey={anchorKey}
+          days={weekKeys(anchorKey)}
           filter={filter}
-          actions={actions}
+          onItemClick={openItem}
           onSelectDay={goToDay}
         />
       )}

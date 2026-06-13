@@ -1,21 +1,15 @@
-import {
-  dayNumber,
-  isSameMonth,
-  monthGrid,
-  todayKey,
-} from '../../lib/dates/dateUtils'
-import type { Priority } from '../../lib/domain/types'
+import { dayNumber, isSameMonth, monthGrid, todayKey } from '../../lib/dates/dateUtils'
 import type { CalendarItem, ItemFilter } from './calendarTypes'
 import { applyFilter, sortItems } from './calendarUtils'
 
 const WEEKDAY_HEADERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
-const dotColor: Record<Priority, string> = {
-  critica: 'bg-red-500',
-  alta: 'bg-amber-500',
-  media: 'bg-indigo-400',
-  baja: 'bg-slate-300',
+const chipBg: Record<CalendarItem['kind'], string> = {
+  evento: 'bg-indigo-600',
+  tarea: 'bg-teal-600',
 }
+
+const MAX_CHIPS = 2 // chips visibles por día en móvil
 
 export function MonthView({
   items,
@@ -41,48 +35,54 @@ export function MonthView({
 
   return (
     <section>
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500">
+      <div className="grid grid-cols-7 text-center text-xs font-semibold text-slate-500">
         {WEEKDAY_HEADERS.map((header, i) => (
           <div key={`${header}-${i}`} className="py-1">
             {header}
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col">
         {weeks.map((week) => (
-          <div key={week[0]} className="grid grid-cols-7 gap-1">
+          <div key={week[0]} className="grid grid-cols-7">
             {week.map((dayKey) => {
               const dayItems = sortItems(byDay.get(dayKey) ?? [])
               const inMonth = isSameMonth(dayKey, anchorKey)
               const isToday = dayKey === today
+              const extra = dayItems.length - MAX_CHIPS
               return (
                 <button
                   key={dayKey}
                   onClick={() => onSelectDay(dayKey)}
                   title={`Ver ${dayKey}`}
-                  className={`flex min-h-14 flex-col items-center gap-1 rounded-md border p-1 text-sm transition ${
-                    isToday
-                      ? 'border-indigo-500 bg-indigo-50 font-bold text-indigo-700'
-                      : inMonth
-                        ? 'border-slate-200 bg-white text-slate-800 hover:bg-slate-50'
-                        : 'border-transparent bg-transparent text-slate-300'
+                  className={`flex min-h-20 flex-col gap-0.5 border border-slate-100 p-1 text-left align-top transition hover:bg-slate-50 ${
+                    inMonth ? 'bg-white' : 'bg-slate-50/50'
                   }`}
                 >
-                  <span>{dayNumber(dayKey)}</span>
-                  {dayItems.length > 0 && (
-                    <span className="flex items-center gap-0.5">
-                      {dayItems.slice(0, 3).map((item) => (
-                        <span
-                          key={`${item.kind}-${item.id}`}
-                          className={`h-1.5 w-1.5 rounded-full ${dotColor[item.priority]}`}
-                        />
-                      ))}
-                      {dayItems.length > 3 && (
-                        <span className="text-[10px] leading-none text-slate-500">
-                          +{dayItems.length - 3}
-                        </span>
-                      )}
+                  <span
+                    className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full text-xs ${
+                      isToday
+                        ? 'bg-indigo-600 font-bold text-white'
+                        : inMonth
+                          ? 'text-slate-700'
+                          : 'text-slate-300'
+                    }`}
+                  >
+                    {dayNumber(dayKey)}
+                  </span>
+
+                  {dayItems.slice(0, MAX_CHIPS).map((item) => (
+                    <span
+                      key={`${item.kind}-${item.id}`}
+                      className={`truncate rounded-sm px-1 text-[9px] leading-tight text-white ${chipBg[item.kind]} ${
+                        item.task?.status === 'completada' ? 'opacity-50 line-through' : ''
+                      }`}
+                    >
+                      {item.title}
                     </span>
+                  ))}
+                  {extra > 0 && (
+                    <span className="px-1 text-[9px] leading-tight text-slate-500">+{extra} más</span>
                   )}
                 </button>
               )

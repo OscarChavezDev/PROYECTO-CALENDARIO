@@ -41,6 +41,20 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
 
+  // Al elegir el inicio, proponer el fin 1 minuto después (si el fin está vacío
+  // o quedó antes/igual que el nuevo inicio). No pisa un fin posterior ya elegido.
+  function handleStartChange(value: string) {
+    setStartsAt(value)
+    if (!value) return
+    const start = new Date(value)
+    if (Number.isNaN(start.getTime())) return
+    const plusOne = isoToLocalInput(new Date(start.getTime() + 60_000).toISOString())
+    setEndsAt((prev) => {
+      if (!prev) return plusOne
+      return new Date(prev).getTime() <= start.getTime() ? plusOne : prev
+    })
+  }
+
   // Al editar, precargar los tiempos de notificación ya guardados
   useEffect(() => {
     if (!initial) return
@@ -130,7 +144,7 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
           <input
             type="datetime-local"
             value={startsAt}
-            onChange={(e) => setStartsAt(e.target.value)}
+            onChange={(e) => handleStartChange(e.target.value)}
             className={inputClass}
           />
         </label>
