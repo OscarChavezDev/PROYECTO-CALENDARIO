@@ -4,7 +4,7 @@
 // Secrets requeridos (Supabase → Edge Functions → Secrets), NUNCA en el frontend:
 //   VAPID_PUBLIC_KEY   = clave pública VAPID
 //   VAPID_PRIVATE_KEY  = clave privada VAPID
-//   VAPID_EMAIL        = mailto:jhhm999@gmail.com
+//   VAPID_EMAIL        = mailto:oscarchavez@gmail.com
 //   SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY se inyectan automáticamente.
 //
 // Desplegar:  supabase functions deploy send-test-push
