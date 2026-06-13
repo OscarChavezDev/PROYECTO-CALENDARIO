@@ -4,11 +4,12 @@
 --
 -- ANTES de ejecutar:
 --   1. Database → Extensions: habilitar  pg_cron  y  pg_net.
---   2. Desplegar la función con Verify JWT OFF:
---        supabase functions deploy send-due-reminders --no-verify-jwt
---      (o en el Dashboard, desactivar "Verify JWT" para esa función).
---   3. Reemplazar <PROJECT_REF> y <CRON_SECRET> abajo por tus valores reales.
---      <CRON_SECRET> debe coincidir con el secret CRON_SECRET de la función.
+--   2. Desplegar la función send-due-reminders. "Verify JWT" en OFF (recomendado:
+--      la función usa su propia auth con x-cron-secret). El cron igual manda la
+--      clave publishable en el header por si quedara en ON; funciona en ambos casos.
+--   3. Reemplazar <CRON_SECRET> por el valor real del secret CRON_SECRET de la función.
+--      (El project ref y la clave publishable ya están puestos; la publishable es
+--       pública, la misma que usa el frontend.)
 --
 -- Ejecutar este bloque en SQL Editor.
 -- ============================================================
@@ -24,9 +25,11 @@ select cron.schedule(
   '* * * * *',  -- cada minuto
   $$
   select net.http_post(
-    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/send-due-reminders',
+    url     := 'https://xzjjtvmtugjiwzfyetcx.supabase.co/functions/v1/send-due-reminders',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
+      'apikey', 'sb_publishable_79cbWIHnj4WSp3GLgjcLig_2G-ekI8E',
+      'Authorization', 'Bearer sb_publishable_79cbWIHnj4WSp3GLgjcLig_2G-ekI8E',
       'x-cron-secret', '<CRON_SECRET>'
     ),
     body    := '{}'::jsonb
@@ -34,6 +37,6 @@ select cron.schedule(
   $$
 );
 
--- Para verificar:  select * from cron.job;
--- Para ver corridas:  select * from cron.job_run_details order by start_time desc limit 10;
--- Para quitarlo:   select cron.unschedule('send-due-reminders-every-minute');
+-- Para verificar el job:      select * from cron.job;
+-- Para ver las corridas:      select * from cron.job_run_details order by start_time desc limit 10;
+-- Para quitarlo:              select cron.unschedule('send-due-reminders-every-minute');

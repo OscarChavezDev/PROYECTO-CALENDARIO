@@ -36,14 +36,16 @@ En Supabase → Edge Functions → Secrets, agrega (las VAPID ya están del Spri
 CRON_SECRET = <el secreto que te pasé por el chat>
 ```
 
-### 2. Desplegar la función con Verify JWT OFF
+### 2. Desplegar la función (Verify JWT en OFF)
 
-Es un job de sistema (no lleva sesión de usuario); se protege con `CRON_SECRET`, así que su
-"Verify JWT" debe estar **desactivado**.
+Es un job de sistema (no lleva sesión de usuario); se protege con `CRON_SECRET`. En la
+configuración de la función, **"Verify JWT with legacy secret" debe estar OFF** (es justo lo
+que el propio panel recomienda cuando usas auth propia en el código). El cron además manda la
+clave publishable, así que funcionaría aunque quedara en ON.
 
 - **Dashboard**: Edge Functions → *Deploy a new function* → nombre `send-due-reminders` →
-  pegar el contenido de `supabase/functions/send-due-reminders/index.ts` → en la configuración
-  de la función, **desactivar "Verify JWT"** → Deploy.
+  pegar el contenido de `supabase/functions/send-due-reminders/index.ts` → Deploy → en la
+  configuración de la función, dejar **"Verify JWT" en OFF**.
 - **CLI**: `supabase functions deploy send-due-reminders --no-verify-jwt`
 
 ### 3. Habilitar extensiones y programar el cron
