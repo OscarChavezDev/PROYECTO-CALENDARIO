@@ -99,7 +99,9 @@ Ver detalles en `docs/07-informe-verificacion-fase-1-2026-06-12.md` y `docs/08-s
 - [x] Crear prueba manual de Web Push (Edge Function send-test-push + botón).
 - [ ] Aplicar migración + desplegar Edge Function + secrets (manual, Oscar).
 - [ ] Probar en iPhone real con PWA instalada (manual, Oscar).
-- [ ] Envío programado de reminders en su `remind_at` (cron — Sprint 7/Etapa 2).
+- [x] Envío programado de reminders en su `remind_at` — Edge Function `send-due-reminders`
+  + cron cada minuto (docs/17-recordatorios-programados.md). Pendiente: desplegar función y
+  programar el cron (manual, Oscar).
 - [ ] Agregar correo de respaldo para eventos/tareas críticas (documentado, sin activar).
 
 ## Sprint 7 — Validación MVP
