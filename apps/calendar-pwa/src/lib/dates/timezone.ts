@@ -16,8 +16,9 @@ const dateTimeFormatter = new Intl.DateTimeFormat('es-CO', {
   timeZone: DEFAULT_TIMEZONE,
   day: '2-digit',
   month: 'short',
-  hour: '2-digit',
+  hour: 'numeric',
   minute: '2-digit',
+  hour12: true,
 })
 
 const dateFormatter = new Intl.DateTimeFormat('es-CO', {

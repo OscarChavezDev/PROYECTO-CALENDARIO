@@ -3,8 +3,8 @@ export function SupabaseStatusBanner({ configured }: { configured: boolean }) {
     <div
       className={`rounded-lg border p-4 text-sm ${
         configured
-          ? 'border-green-300 bg-green-50 text-green-800'
-          : 'border-amber-300 bg-amber-50 text-amber-800'
+          ? 'border-green-500/30 bg-green-500/10 text-green-300'
+          : 'border-amber-500/30 bg-amber-500/10 text-amber-300'
       }`}
     >
       {configured

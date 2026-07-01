@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { SyncStatusBadge } from '../../components/SyncStatusBadge'
 import { isSupabaseConfigured } from '../../lib/config/env'
 import { useOnlineStatus } from '../../lib/network/useOnlineStatus'
 import { STORES, getAll, getMeta, replaceAll, setMeta } from '../../lib/offline/db'
@@ -8,7 +6,6 @@ import {
   countQueue,
   enqueueMutation,
   findQueuedCreate,
-  removeMutation,
   updateMutationPayload,
 } from '../../lib/offline/offlineQueue'
 import { processQueue } from '../../lib/offline/syncQueue'
@@ -19,12 +16,10 @@ import {
   deleteReminders,
   replaceReminders,
 } from '../notifications/reminderService'
-import { signOut } from '../auth/authService'
 import { useAuth } from '../auth/useAuth'
 import {
   buildLocalEvent,
   createEvent,
-  deleteEvent,
   listEvents,
   mergeEventValues,
   updateEvent,
@@ -34,7 +29,6 @@ import {
   buildLocalTask,
   completeTask,
   createTask,
-  deleteTask,
   listTasks,
   mergeTaskValues,
   postponeTask,
@@ -53,7 +47,6 @@ interface DefaultCalendar {
 
 export function CalendarPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const online = useOnlineStatus()
   const [calendar, setCalendar] = useState<DefaultCalendar | null>(null)
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -64,14 +57,13 @@ export function CalendarPage() {
   )
   const [actionError, setActionError] = useState<string | null>(null)
   const [loading, setLoading] = useState(isSupabaseConfigured)
-  const [signingOut, setSigningOut] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
-  const [pendingCount, setPendingCount] = useState(0)
+  const [, _setRefreshing] = useState(false)
+  const [, _setPendingCount] = useState(0)
 
   const refreshPendingCount = useCallback(() => {
     countQueue()
-      .then(setPendingCount)
-      .catch(() => setPendingCount(0))
+      .then(_setPendingCount)
+      .catch(() => _setPendingCount(0))
   }, [])
 
   const loadData = useCallback(async () => {
@@ -162,12 +154,12 @@ export function CalendarPage() {
   }, [online, loadData, refreshPendingCount])
 
   const refresh = useCallback(async () => {
-    setRefreshing(true)
+    _setRefreshing(true)
     await loadData()
-    setRefreshing(false)
+    _setRefreshing(false)
   }, [loadData])
 
-  const realtimeStatus = useCalendarRealtime({
+  useCalendarRealtime({
     userId: user?.id ?? null,
     onEventChange: (type, newRow, oldId) =>
       setEvents((prev) => applyChange(prev, type, newRow, oldId)),
@@ -193,16 +185,6 @@ export function CalendarPage() {
       await action()
     } catch (err) {
       reportError(err, 'El evento se guardó, pero no se pudieron guardar los recordatorios.')
-    }
-  }
-
-  async function handleSignOut() {
-    setSigningOut(true)
-    try {
-      await signOut()
-      navigate('/login')
-    } catch {
-      setSigningOut(false)
     }
   }
 
@@ -267,32 +249,6 @@ export function CalendarPage() {
           offsets: values.reminderOffsets ?? [],
         }),
       )
-    }
-  }
-
-  async function handleDeleteEvent(event: CalendarEvent) {
-    if (!window.confirm(`¿Eliminar el evento "${event.title}"?`)) return
-    try {
-      if (!online) {
-        if (event.id.startsWith('local-')) {
-          const queued = await findQueuedCreate('event', event.id)
-          if (queued) await removeMutation(queued.id)
-        } else {
-          await enqueueMutation({
-            entity_type: 'event',
-            operation: 'delete',
-            entity_id: event.id,
-            base_updated_at: event.updated_at,
-            payload: {},
-          })
-        }
-        refreshPendingCount()
-      } else {
-        await deleteEvent(event.id)
-      }
-      setEvents((prev) => prev.filter((e) => e.id !== event.id))
-    } catch (err) {
-      reportError(err, 'Error eliminando el evento.')
     }
   }
 
@@ -432,103 +388,31 @@ export function CalendarPage() {
     }
   }
 
-  async function handleDeleteTask(task: Task) {
-    if (!window.confirm(`¿Eliminar la tarea "${task.title}"?`)) return
-    try {
-      if (!online) {
-        if (task.id.startsWith('local-')) {
-          const queued = await findQueuedCreate('task', task.id)
-          if (queued) await removeMutation(queued.id)
-        } else {
-          await enqueueMutation({
-            entity_type: 'task',
-            operation: 'delete',
-            entity_id: task.id,
-            base_updated_at: task.updated_at,
-            payload: {},
-          })
-        }
-        refreshPendingCount()
-      } else {
-        await deleteTask(task.id)
-      }
-      setTasks((prev) => prev.filter((t) => t.id !== task.id))
-    } catch (err) {
-      reportError(err, 'Error eliminando la tarea.')
-    }
-  }
-
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">Mi calendario</h1>
-          <p className="text-sm text-slate-500">
-            {user?.email}
-            {calendar && (
-              <>
-                {' · '}
-                <span
-                  aria-hidden
-                  className="inline-block h-2.5 w-2.5 rounded-full align-middle"
-                  style={{ backgroundColor: calendar.color ?? '#2563eb' }}
-                />{' '}
-                {calendar.name}
-              </>
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {pendingCount > 0 && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-              {pendingCount} {pendingCount === 1 ? 'cambio' : 'cambios'} por sincronizar
-            </span>
-          )}
-          <SyncStatusBadge
-            status={realtimeStatus}
-            refreshing={refreshing}
-            onRefresh={() => {
-              void refresh()
-            }}
-          />
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
-          >
-            {signingOut ? 'Saliendo…' : 'Cerrar sesión'}
-          </button>
-        </div>
-      </div>
+    <section className="flex h-full min-h-0 flex-col">
 
       {usingCachedData && (
-        <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-300">
           Estás viendo datos guardados localmente (sin conexión con el servidor).
         </p>
       )}
 
       {actionError && (
-        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className="rounded-md bg-red-500/10 p-3 text-sm text-red-300">
           {actionError}
         </p>
       )}
 
       {loading ? (
-        <p className="text-sm text-slate-500">Cargando calendario…</p>
+        <p className="text-sm text-slate-400">Cargando calendario…</p>
       ) : calendar && user ? (
         <CalendarShell
           events={events}
           tasks={tasks}
           onCreateEvent={handleCreateEvent}
           onUpdateEvent={handleUpdateEvent}
-          onDeleteEvent={(event) => {
-            void handleDeleteEvent(event)
-          }}
           onCreateTask={handleCreateTask}
           onUpdateTask={handleUpdateTask}
-          onDeleteTask={(task) => {
-            void handleDeleteTask(task)
-          }}
           onCompleteTask={(task) => {
             void handleCompleteTask(task)
           }}
@@ -537,7 +421,7 @@ export function CalendarPage() {
           }}
         />
       ) : (
-        <p role="alert" className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+        <p role="alert" className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-300">
           {loadError}
         </p>
       )}

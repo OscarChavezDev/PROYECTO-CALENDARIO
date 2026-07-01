@@ -17,13 +17,26 @@ function toReadableError(message: string): string {
   return message
 }
 
-export async function signUpWithEmail(email: string, password: string) {
+export async function signUpWithEmail(email: string, password: string, fullName?: string) {
   const supabase = requireClient()
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       emailRedirectTo: `${window.location.origin}/login`,
+      data: fullName ? { full_name: fullName } : undefined,
+    },
+  })
+  if (error) throw new Error(toReadableError(error.message))
+  return data
+}
+
+export async function signInWithGoogle() {
+  const supabase = requireClient()
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/app`,
     },
   })
   if (error) throw new Error(toReadableError(error.message))

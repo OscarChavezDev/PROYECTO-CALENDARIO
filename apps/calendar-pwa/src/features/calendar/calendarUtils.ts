@@ -11,12 +11,20 @@ export const OPEN_TASK_STATUSES: TaskStatus[] = ['pendiente', 'en_proceso', 'pos
 
 export function eventToItem(event: CalendarEvent): CalendarItem {
   const hasTime = !event.all_day
+  const startMin = hasTime ? minutesFromIso(event.starts_at) : 540
+  const endMin = hasTime ? minutesFromIso(event.ends_at) : 630
+  const dur = Math.max(15, endMin - startMin)
+
   return {
     kind: 'evento',
     id: event.id,
     dayKey: dayKeyFromIso(event.starts_at),
     time: hasTime ? timeFromIso(event.starts_at) : null,
-    sortMinutes: hasTime ? minutesFromIso(event.starts_at) : NO_TIME,
+    endTime: hasTime ? timeFromIso(event.ends_at) : null,
+    durationMin: dur > 0 ? dur : 60,
+    location: event.location || null,
+    notes: event.description,
+    sortMinutes: hasTime ? startMin : NO_TIME,
     title: event.title,
     priority: event.priority,
     event,
@@ -31,6 +39,10 @@ export function taskToItem(task: Task): CalendarItem | null {
       id: task.id,
       dayKey: dayKeyFromIso(task.due_at),
       time: timeFromIso(task.due_at),
+      endTime: null,
+      durationMin: 30,
+      location: null,
+      notes: task.description,
       sortMinutes: minutesFromIso(task.due_at),
       title: task.title,
       priority: task.priority,
@@ -43,6 +55,10 @@ export function taskToItem(task: Task): CalendarItem | null {
       id: task.id,
       dayKey: task.due_date,
       time: null,
+      endTime: null,
+      durationMin: 30,
+      location: null,
+      notes: task.description,
       sortMinutes: NO_TIME,
       title: task.title,
       priority: task.priority,

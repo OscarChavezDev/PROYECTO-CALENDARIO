@@ -6,7 +6,7 @@ export function ProtectedRoute() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12 text-sm text-slate-500">
+      <div className="flex justify-center py-12 text-sm text-slate-400">
         Cargando sesión…
       </div>
     )

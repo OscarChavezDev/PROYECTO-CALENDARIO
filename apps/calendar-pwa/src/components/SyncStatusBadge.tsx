@@ -18,11 +18,11 @@ export function SyncStatusBadge({
   const { dot, label } = statusConfig[status]
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+    <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900 px-3 py-1 text-xs font-medium text-slate-400">
       <span aria-hidden className={`h-2 w-2 rounded-full ${dot}`} />
       {refreshing ? 'Actualizando…' : label}
       {status === 'desconectado' && !refreshing && (
-        <button onClick={onRefresh} className="font-semibold text-indigo-600 hover:underline">
+        <button onClick={onRefresh} className="font-semibold text-blue-400 hover:underline">
           Actualizar
         </button>
       )}

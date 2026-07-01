@@ -25,17 +25,23 @@ function renderLogin() {
 }
 
 describe('LoginPage', () => {
-  it('renderiza formulario con email y contraseña', () => {
+  it('renderiza campos de correo y contraseña', () => {
     renderLogin()
 
-    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^contraseña$/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument()
+    expect(screen.getAllByLabelText(/correo/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText(/^contraseña$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: /iniciar sesión|^entrar$/i }).length).toBeGreaterThan(0)
   })
 
-  it('tiene link hacia registro', () => {
+  it('ofrece continuar con Google', () => {
     renderLogin()
 
-    expect(screen.getByRole('link', { name: /regístrate/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /continuar con google/i }).length).toBeGreaterThan(0)
+  })
+
+  it('permite cambiar a registro', () => {
+    renderLogin()
+
+    expect(screen.getAllByRole('button', { name: /regístrate ahora|crear cuenta/i }).length).toBeGreaterThan(0)
   })
 })

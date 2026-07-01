@@ -1,10 +1,10 @@
 import { PRIORITY_LABELS, type Priority } from '../lib/domain/types'
 
 const priorityStyles: Record<Priority, string> = {
-  baja: 'bg-slate-200 text-slate-700',
-  media: 'bg-blue-100 text-blue-800',
-  alta: 'bg-amber-100 text-amber-800',
-  critica: 'bg-red-100 text-red-800',
+  baja: 'bg-slate-700 text-slate-300',
+  media: 'bg-blue-500/15 text-blue-300',
+  alta: 'bg-amber-500/15 text-amber-300',
+  critica: 'bg-red-500/15 text-red-300',
 }
 
 export function PriorityBadge({ priority }: { priority: Priority }) {
@@ -19,23 +19,23 @@ export function PriorityBadge({ priority }: { priority: Priority }) {
 
 const statusStyles: Record<string, string> = {
   // eventos
-  programado: 'bg-indigo-100 text-indigo-800',
-  completado: 'bg-green-100 text-green-800',
-  cancelado: 'bg-slate-200 text-slate-500',
-  pospuesto: 'bg-amber-100 text-amber-800',
+  programado: 'bg-blue-500/15 text-blue-300',
+  completado: 'bg-green-500/15 text-green-300',
+  cancelado: 'bg-slate-700 text-slate-400',
+  pospuesto: 'bg-amber-500/15 text-amber-300',
   // tareas
-  pendiente: 'bg-indigo-100 text-indigo-800',
-  en_proceso: 'bg-blue-100 text-blue-800',
-  completada: 'bg-green-100 text-green-800',
-  pospuesta: 'bg-amber-100 text-amber-800',
-  cancelada: 'bg-slate-200 text-slate-500',
+  pendiente: 'bg-blue-500/15 text-blue-300',
+  en_proceso: 'bg-blue-500/15 text-blue-300',
+  completada: 'bg-green-500/15 text-green-300',
+  pospuesta: 'bg-amber-500/15 text-amber-300',
+  cancelada: 'bg-slate-700 text-slate-400',
 }
 
 export function StatusBadge({ status, label }: { status: string; label: string }) {
   return (
     <span
       className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-        statusStyles[status] ?? 'bg-slate-200 text-slate-700'
+        statusStyles[status] ?? 'bg-slate-700 text-slate-300'
       }`}
     >
       {label}

@@ -14,6 +14,11 @@ export interface CalendarItem {
   dayKey: string
   /** "HH:mm" en la zona del producto, o null si no tiene hora (todo el día / solo fecha). */
   time: string | null
+  endTime?: string | null
+  durationMin?: number
+  location?: string | null
+  notes?: string | null
+  attendeesCount?: number
   /** Minutos desde medianoche para ordenar; los sin hora van al final. */
   sortMinutes: number
   title: string
@@ -22,4 +27,4 @@ export interface CalendarItem {
   task?: Task
 }
 
-export type CalendarViewId = 'hoy' | 'dia' | '3 dias' | 'semana' | 'mes'
+export type CalendarViewId = 'hoy' | 'dia' | 'semana' | 'mes'

@@ -1,38 +1,59 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { PRIORITIES, PRIORITY_LABELS, type Priority } from '../../lib/domain/types'
+import { OptionPills } from '../../components/OptionPills'
+import { TimePicker } from '../../components/TimePicker'
+import { PRIORITY_PILLS } from '../../components/pills'
+import { type Priority } from '../../lib/domain/types'
+import { addDays, todayKey } from '../../lib/dates/dateUtils'
 import { isoToLocalInput } from '../../lib/dates/timezone'
 import { ReminderPicker } from '../notifications/ReminderPicker'
 import { listReminderOffsets } from '../notifications/reminderService'
 import { validateEvent } from './eventValidation'
-import {
-  EVENT_STATUSES,
-  EVENT_STATUS_LABELS,
-  type CalendarEvent,
-  type EventFormValues,
-  type EventStatus,
-} from './types'
+import { type CalendarEvent, type EventFormValues, type EventStatus } from './types'
 
 const inputClass =
-  'rounded-md border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none'
-const labelClass = 'flex flex-col gap-1 text-sm font-medium text-slate-700'
+  'w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/20 outline-none transition-all hover:bg-white/[0.05] focus:border-blue-400/50 focus:ring-2 focus:ring-blue-500/30'
+const labelClass = 'flex flex-col gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400/80'
+const quickChip =
+  'press rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold normal-case tracking-normal text-slate-300 transition-colors hover:border-blue-400/40 hover:text-white'
 
 interface EventFormProps {
   initial?: CalendarEvent | null
+  /** Día por defecto (YYYY-MM-DD) al crear, según la vista activa. */
+  defaultDate?: string
+  /** Hora por defecto ("HH:mm") al crear desde un hueco de la grilla. */
+  defaultTime?: string
   onSubmit: (values: EventFormValues) => Promise<void>
   onCancel?: () => void
 }
 
-export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
+/** Suma `minutes` a una hora "HH:mm"; recorta a 23:59 si se pasa del día. */
+function addMinutesToTime(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number)
+  const total = Math.min(h * 60 + m + minutes, 23 * 60 + 59)
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
+export function EventForm({ initial, defaultDate, defaultTime, onSubmit, onCancel }: EventFormProps) {
+  const initialLocalStart = initial ? isoToLocalInput(initial.starts_at) : ''
+  const initialLocalEnd = initial ? isoToLocalInput(initial.ends_at) : ''
+
   const [title, setTitle] = useState(initial?.title ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
-  const [startsAt, setStartsAt] = useState(initial ? isoToLocalInput(initial.starts_at) : '')
-  const [endsAt, setEndsAt] = useState(initial ? isoToLocalInput(initial.ends_at) : '')
+  const [date, setDate] = useState(initial ? initialLocalStart.slice(0, 10) : (defaultDate ?? ''))
+  const [startTime, setStartTime] = useState(
+    initial ? initialLocalStart.slice(11, 16) : (defaultTime ?? ''),
+  )
+  const [endTime, setEndTime] = useState(
+    initial
+      ? initialLocalEnd.slice(11, 16)
+      : defaultTime
+        ? addMinutesToTime(defaultTime, 60)
+        : '',
+  )
   const [allDay, setAllDay] = useState(initial?.all_day ?? false)
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? 'media')
   const [status, setStatus] = useState<EventStatus>(initial?.status ?? 'programado')
-  const [requiresDeliverable, setRequiresDeliverable] = useState(
-    initial?.requires_deliverable ?? false,
-  )
+  const [requiresDeliverable, setRequiresDeliverable] = useState(initial?.requires_deliverable ?? false)
   const [deliverableDescription, setDeliverableDescription] = useState(
     initial?.deliverable_description ?? '',
   )
@@ -41,21 +62,13 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
   const [errors, setErrors] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
 
-  // Al elegir el inicio, proponer el fin 1 minuto después (si el fin está vacío
-  // o quedó antes/igual que el nuevo inicio). No pisa un fin posterior ya elegido.
-  function handleStartChange(value: string) {
-    setStartsAt(value)
+  // Al elegir la hora de inicio, proponer fin +1h si está vacío o quedó antes.
+  function handleStartTimeChange(value: string) {
+    setStartTime(value)
     if (!value) return
-    const start = new Date(value)
-    if (Number.isNaN(start.getTime())) return
-    const plusOne = isoToLocalInput(new Date(start.getTime() + 60_000).toISOString())
-    setEndsAt((prev) => {
-      if (!prev) return plusOne
-      return new Date(prev).getTime() <= start.getTime() ? plusOne : prev
-    })
+    setEndTime((prev) => (!prev || prev <= value ? addMinutesToTime(value, 60) : prev))
   }
 
-  // Al editar, precargar los tiempos de notificación ya guardados
   useEffect(() => {
     if (!initial) return
     let cancelled = false
@@ -63,9 +76,7 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
       .then((offsets) => {
         if (!cancelled) setReminderOffsets(offsets)
       })
-      .catch(() => {
-        /* sin reminders o sin conexión: dejar vacío */
-      })
+      .catch(() => {})
     return () => {
       cancelled = true
     }
@@ -73,6 +84,8 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const startsAt = date && (allDay || startTime) ? `${date}T${allDay ? '00:00' : startTime}` : ''
+    const endsAt = date && (allDay || endTime) ? `${date}T${allDay ? '23:59' : endTime}` : ''
     const values: EventFormValues = {
       title,
       description,
@@ -96,11 +109,10 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
     try {
       await onSubmit(values)
       if (!initial) {
-        // tras crear, limpiar el formulario
         setTitle('')
         setDescription('')
-        setStartsAt('')
-        setEndsAt('')
+        setStartTime('')
+        setEndTime('')
         setAllDay(false)
         setPriority('media')
         setStatus('programado')
@@ -117,149 +129,176 @@ export function EventForm({ initial, onSubmit, onCancel }: EventFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <label className={labelClass}>
-        Título
+        <span>Título del Evento</span>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          placeholder="¿Qué tienes planeado?"
           className={inputClass}
+          autoFocus
         />
       </label>
 
-      <label className={labelClass}>
-        Descripción (opcional)
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          className={inputClass}
-        />
-      </label>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className={labelClass}>
-          Inicio
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400/80">Fecha</span>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => setDate(todayKey())} className={quickChip}>
+                Hoy
+              </button>
+              <button type="button" onClick={() => setDate(addDays(todayKey(), 1))} className={quickChip}>
+                Mañana
+              </button>
+            </div>
+          </div>
           <input
-            type="datetime-local"
-            value={startsAt}
-            onChange={(e) => handleStartChange(e.target.value)}
+            type="date"
+            aria-label="Fecha"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
             className={inputClass}
           />
-        </label>
-        <label className={labelClass}>
-          Fin
-          <input
-            type="datetime-local"
-            value={endsAt}
-            onChange={(e) => setEndsAt(e.target.value)}
-            className={inputClass}
-          />
-        </label>
+        </div>
+
+        <div className="flex items-end">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={allDay}
+            onClick={() => setAllDay(!allDay)}
+            className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/[0.06]"
+          >
+            <span>Todo el día</span>
+            <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${allDay ? 'bg-blue-600' : 'bg-white/15'}`}>
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${allDay ? 'left-[1.375rem]' : 'left-0.5'}`} />
+            </span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className={labelClass}>
-          Prioridad
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority)}
-            className={inputClass}
-          >
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>
-                {PRIORITY_LABELS[p]}
-              </option>
+      {!allDay && (
+        <div className="flex flex-col gap-2.5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className={labelClass}>
+              <span>Hora inicio</span>
+              <TimePicker ariaLabel="Hora inicio" value={startTime} onChange={handleStartTimeChange} />
+            </div>
+            <div className={labelClass}>
+              <span>Hora fin</span>
+              <TimePicker ariaLabel="Hora fin" value={endTime} onChange={setEndTime} />
+            </div>
+          </div>
+          {/* Duración rápida: fija el fin relativo al inicio */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">Duración</span>
+            {[30, 60, 90, 120].map((min) => (
+              <button
+                key={min}
+                type="button"
+                onClick={() => {
+                  const s = startTime || '09:00'
+                  setStartTime(s)
+                  setEndTime(addMinutesToTime(s, min))
+                }}
+                className={quickChip}
+              >
+                {min === 30 ? '30 min' : min === 60 ? '1 h' : min === 90 ? '1.5 h' : '2 h'}
+              </button>
             ))}
-          </select>
-        </label>
-        <label className={labelClass}>
-          Estado
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value as EventStatus)}
-            className={inputClass}
-          >
-            {EVENT_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {EVENT_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+          </div>
+        </div>
+      )}
+
+      <OptionPills label="Prioridad" value={priority} options={PRIORITY_PILLS} onChange={setPriority} />
 
       <label className={labelClass}>
-        Lugar (opcional)
+        <span>Ubicación o Enlace (opcional)</span>
         <input
           type="text"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
+          placeholder="Sala de juntas, Zoom, Google Meet…"
           className={inputClass}
         />
       </label>
 
-      <div className="flex flex-col gap-2">
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            checked={allDay}
-            onChange={(e) => setAllDay(e.target.checked)}
-            className="h-4 w-4"
-          />
-          Todo el día
-        </label>
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input
-            type="checkbox"
-            checked={requiresDeliverable}
-            onChange={(e) => setRequiresDeliverable(e.target.checked)}
-            className="h-4 w-4"
-          />
-          Requiere entregable
-        </label>
-      </div>
+      <label className={labelClass}>
+        <span>Notas o Descripción</span>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          placeholder="Añade detalles, orden del día o recordatorios…"
+          className={`${inputClass} resize-none`}
+        />
+      </label>
 
-      {requiresDeliverable && (
-        <label className={labelClass}>
-          Descripción del entregable
+      <div className="flex flex-col gap-2.5 rounded-xl border border-white/[0.07] bg-black/20 p-3">
+        <button
+          type="button"
+          role="switch"
+          aria-checked={requiresDeliverable}
+          onClick={() => setRequiresDeliverable(!requiresDeliverable)}
+          className="flex items-center justify-between gap-3 text-left text-sm font-medium text-slate-200"
+        >
+          <span>Requiere entregable (adjuntar archivo)</span>
+          <span className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${requiresDeliverable ? 'bg-blue-600' : 'bg-white/15'}`}>
+            <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${requiresDeliverable ? 'left-[1.375rem]' : 'left-0.5'}`} />
+          </span>
+        </button>
+
+        {requiresDeliverable && (
           <input
             type="text"
             value={deliverableDescription}
             onChange={(e) => setDeliverableDescription(e.target.value)}
+            placeholder="Describe el entregable (ej. Acta firmada, Presentación en PDF…)"
             className={inputClass}
           />
-        </label>
-      )}
+        )}
+      </div>
 
       <ReminderPicker value={reminderOffsets} onChange={setReminderOffsets} />
 
       {errors.length > 0 && (
-        <ul role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <ul role="alert" className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-medium text-red-300 space-y-1">
           {errors.map((error) => (
-            <li key={error}>{error}</li>
+            <li key={error} className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-base">error</span>
+              <span>{error}</span>
+            </li>
           ))}
         </ul>
       )}
 
-      <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {submitting ? 'Guardando…' : initial ? 'Guardar cambios' : 'Crear evento'}
-        </button>
+      <div className="mt-1 flex gap-3 border-t border-white/10 pt-4">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-slate-300 px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
+            className="flex-1 rounded-xl border border-white/10 px-6 py-3 text-sm font-bold uppercase tracking-wide text-slate-300 transition-all duration-200 hover:bg-white/5 hover:text-white active:scale-[0.98]"
           >
             Cancelar
           </button>
         )}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="glow-button flex flex-[1.5] items-center justify-center gap-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-200 hover:from-blue-400 hover:to-indigo-500 active:scale-[0.98] disabled:opacity-50"
+        >
+          {submitting ? (
+            'Guardando…'
+          ) : (
+            <>
+              {initial ? 'Guardar cambios' : 'Crear evento'}
+              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </>
+          )}
+        </button>
       </div>
     </form>
   )

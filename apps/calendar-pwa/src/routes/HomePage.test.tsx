@@ -11,11 +11,9 @@ describe('HomePage', () => {
       </MemoryRouter>,
     )
 
-    expect(
-      screen.getByRole('heading', { name: /organizador de calendario inteligente/i }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /organiza tu día con claridad/i })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /iniciar sesión/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /mi calendario/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /ver mi calendario/i })).toBeInTheDocument()
   })
 
   it('no muestra el aviso técnico de Supabase cuando está configurado', () => {

@@ -2,25 +2,30 @@ import { dayNumber, isSameMonth, monthGrid, todayKey } from '../../lib/dates/dat
 import type { CalendarItem, ItemFilter } from './calendarTypes'
 import { applyFilter, sortItems } from './calendarUtils'
 
-const WEEKDAY_HEADERS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+const WEEKDAY_HEADERS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
-const chipBg: Record<CalendarItem['kind'], string> = {
-  evento: 'bg-indigo-600',
-  tarea: 'bg-teal-600',
+const MAX_CHIPS = 4
+
+// Color de los chips según prioridad (consistente con Día/Semana).
+const PRIO_CHIP: Record<string, string> = {
+  critica: 'border-rose-500 bg-rose-500/10 text-rose-200',
+  alta: 'border-amber-500 bg-amber-500/10 text-amber-200',
+  media: 'border-blue-500 bg-blue-500/10 text-blue-200',
+  baja: 'border-slate-400 bg-slate-500/15 text-slate-300',
 }
-
-const MAX_CHIPS = 2 // chips visibles por día en móvil
 
 export function MonthView({
   items,
   anchorKey,
   filter,
   onSelectDay,
+  onItemClick,
 }: {
   items: CalendarItem[]
   anchorKey: string
   filter: ItemFilter
   onSelectDay: (dayKey: string) => void
+  onItemClick?: (item: CalendarItem) => void
 }) {
   const today = todayKey()
   const weeks = monthGrid(anchorKey)
@@ -34,63 +39,71 @@ export function MonthView({
   }
 
   return (
-    <section>
-      <div className="grid grid-cols-7 text-center text-xs font-semibold text-slate-500">
-        {WEEKDAY_HEADERS.map((header, i) => (
-          <div key={`${header}-${i}`} className="py-1">
-            {header}
-          </div>
+    <section className="flex h-full min-h-0 flex-col overflow-hidden px-4 md:px-8 pb-6 select-none">
+      {/* Cabecera Días de la Semana */}
+      <div className="grid grid-cols-7 px-2 pb-3 text-center text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        {WEEKDAY_HEADERS.map((header) => (
+          <div key={header}>{header}</div>
         ))}
       </div>
-      <div className="flex flex-col">
-        {weeks.map((week) => (
-          <div key={week[0]} className="grid grid-cols-7">
-            {week.map((dayKey) => {
-              const dayItems = sortItems(byDay.get(dayKey) ?? [])
-              const inMonth = isSameMonth(dayKey, anchorKey)
-              const isToday = dayKey === today
-              const extra = dayItems.length - MAX_CHIPS
-              return (
-                <button
-                  key={dayKey}
-                  onClick={() => onSelectDay(dayKey)}
-                  title={`Ver ${dayKey}`}
-                  className={`flex min-h-20 flex-col gap-0.5 border border-slate-100 p-1 text-left align-top transition hover:bg-slate-50 ${
-                    inMonth ? 'bg-white' : 'bg-slate-50/50'
-                  }`}
-                >
-                  <span
-                    className={`mx-auto flex h-5 w-5 items-center justify-center rounded-full text-xs ${
-                      isToday
-                        ? 'bg-indigo-600 font-bold text-white'
-                        : inMonth
-                          ? 'text-slate-700'
-                          : 'text-slate-300'
-                    }`}
-                  >
-                    {dayNumber(dayKey)}
-                  </span>
 
-                  {dayItems.slice(0, MAX_CHIPS).map((item) => (
-                    <span
+      {/* Grilla Mensual */}
+      <div className="grid min-h-0 flex-1 grid-cols-7 overflow-hidden rounded-2xl border border-white/[0.07] [background:rgba(255,255,255,0.04)] gap-px">
+        {weeks.flat().map((dayKey) => {
+          const dayItems = sortItems(byDay.get(dayKey) ?? [])
+          const inMonth = isSameMonth(dayKey, anchorKey)
+          const isToday = dayKey === today
+          const extra = dayItems.length - MAX_CHIPS
+
+          return (
+            <div
+              key={dayKey}
+              onClick={() => onSelectDay(dayKey)}
+              className={`group relative flex min-h-[5.5rem] flex-col gap-1 overflow-hidden p-2 text-left transition-colors cursor-pointer ${
+                isToday
+                  ? 'bg-blue-500/[0.08] ring-1 ring-inset ring-blue-500/30'
+                  : inMonth
+                    ? 'bg-ui-bg/60 hover:bg-white/[0.03]'
+                    : 'bg-ui-bg/30 opacity-40 hover:bg-white/[0.02]'
+              }`}
+            >
+              <span
+                className={`text-xs font-semibold ${
+                  isToday ? 'text-blue-400' : inMonth ? 'text-slate-200' : 'text-slate-500'
+                }`}
+              >
+                {dayNumber(dayKey)}
+              </span>
+
+              <div className="mt-auto flex flex-col gap-1 overflow-hidden">
+                {dayItems.slice(0, MAX_CHIPS).map((item) => {
+                  const isCompleted = item.kind === 'tarea' && item.task?.status === 'completada'
+                  return (
+                    <div
                       key={`${item.kind}-${item.id}`}
-                      className={`truncate rounded-sm px-1 text-[9px] leading-tight text-white ${chipBg[item.kind]} ${
-                        item.task?.status === 'completada' ? 'opacity-50 line-through' : ''
-                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (onItemClick) onItemClick(item)
+                      }}
+                      className={`truncate rounded-md border-l-2 px-1.5 py-1 text-[10px] font-medium transition-all press ${
+                        PRIO_CHIP[item.priority] ?? PRIO_CHIP.media
+                      } ${isCompleted ? 'opacity-40 line-through' : ''}`}
                     >
                       {item.title}
-                    </span>
-                  ))}
-                  {extra > 0 && (
-                    <span className="px-1 text-[9px] leading-tight text-slate-500">+{extra} más</span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        ))}
+                    </div>
+                  )
+                })}
+
+                {extra > 0 && (
+                  <span className="px-1 text-[10px] font-bold text-blue-400 hover:underline">
+                    +{extra} más
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
-      <p className="mt-2 text-xs text-slate-400">Toca un día para ver su detalle.</p>
     </section>
   )
 }

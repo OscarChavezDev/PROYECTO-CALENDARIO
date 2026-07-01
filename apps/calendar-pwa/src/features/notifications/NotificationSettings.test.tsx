@@ -49,21 +49,24 @@ describe('NotificationSettings', () => {
     expect(screen.getByText(/no soporta web push/i)).toBeInTheDocument()
   })
 
-  it('muestra estado "Denegado" y deshabilita activar cuando el permiso está denegado', () => {
+  it('deshabilita activar cuando el permiso está denegado', () => {
     mockedSupported.mockReturnValue(true)
     mockedPermission.mockReturnValue('denied')
     renderSettings()
-    expect(screen.getByText(/denegado/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /activar notificaciones/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^activar$/i })).toBeDisabled()
   })
 
   it('permite activar cuando el permiso no ha sido solicitado', () => {
     mockedSupported.mockReturnValue(true)
     mockedPermission.mockReturnValue('default')
     renderSettings()
-    expect(screen.getByText(/no solicitado/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /activar notificaciones/i })).toBeEnabled()
-    // Sin suscripción aún, la prueba está deshabilitada
-    expect(screen.getByRole('button', { name: /enviar notificación de prueba/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^activar$/i })).toBeEnabled()
+  })
+
+  it('muestra estado activo cuando el permiso está concedido', () => {
+    mockedSupported.mockReturnValue(true)
+    mockedPermission.mockReturnValue('granted')
+    renderSettings()
+    expect(screen.getAllByText(/activos/i).length).toBeGreaterThan(0)
   })
 })

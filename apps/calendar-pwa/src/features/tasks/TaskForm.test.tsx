@@ -8,8 +8,8 @@ describe('TaskForm', () => {
 
     expect(screen.getByLabelText(/título/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/fecha límite/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/prioridad/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/requiere entregable/i)).toBeInTheDocument()
+    expect(screen.getByRole('radiogroup', { name: /prioridad/i })).toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: /requiere entregable/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /crear tarea/i })).toBeInTheDocument()
   })
 

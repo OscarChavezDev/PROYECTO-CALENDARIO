@@ -1,1 +1,680 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Aurora Glass — paleta de marca (design system)
+   Tokens expuestos como utilidades Tailwind v4 (bg-aurora-*, text-aurora-*)
+   ============================================================ */
+
+@theme {
+  /* ----------------------------------------------------------
+     Escala de superficies unificada (pantalla principal).
+     Una sola familia navy para sidebar + header + tarjetas, de
+     más oscuro (fondo) a más claro (chips), para dar profundidad
+     coherente. Usar con opacidad: bg-ui-panel/85, border-ui-line/60.
+     ---------------------------------------------------------- */
+  --color-ui-bg: #070b14;     /* fondo de la app */
+  --color-ui-panel: #0b1322;  /* sidebar y barra superior */
+  --color-ui-card: #101c30;   /* tarjetas del dashboard */
+  --color-ui-chip: #18253d;   /* chips, segmentos, badges internos */
+  --color-ui-line: #243149;   /* hairlines / bordes */
+
+  /* Superficies "Deep Space" */
+  --color-aurora-bg: #050811;
+  --color-aurora-surface: #0f131d;
+  --color-aurora-surface-low: #0a0e17;
+  --color-aurora-surface-mid: #151f32;
+  --color-aurora-surface-high: #262a34;
+  --color-aurora-surface-navy: #0a101d;
+
+  /* Acentos */
+  --color-aurora-primary: #4d8eff;       /* azul interactivo */
+  --color-aurora-primary-bright: #adc6ff; /* azul claro / tint */
+  --color-aurora-indigo: #3131c0;        /* secundario / orbes */
+  --color-aurora-indigo-bright: #c0c1ff;
+  --color-aurora-emerald: #4edea3;       /* éxito / sincronizado */
+  --color-aurora-emerald-deep: #00a572;
+  --color-aurora-danger: #ef4444;
+  --color-aurora-danger-soft: #ffb4ab;
+
+  /* Texto */
+  --color-aurora-text: #f8fafc;
+  --color-aurora-text-muted: #94a3b8;
+  --color-aurora-text-dim: #64748b;
+
+  /* Tipografía y formas */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-glass: 1.25rem;
+}
+
+/* ============================================================
+   Tema oscuro premium — paleta e identidad (azul sobre near-black)
+   ============================================================ */
+
+:root {
+  --bg: #0a0e16;
+  --surface: #0f1623;
+  --surface-2: #161f2e;
+  --border: #1f2937;
+  --border-soft: #172033;
+  --text: #e6edf6;
+  --text-muted: #93a1b5;
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.15);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  color-scheme: dark;
+}
+
+body {
+  background-color: #070b14;
+  color: var(--text);
+}
+
+/* Mesh de aurora + foco superior tras el header (capa difusa, animada) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 44% at 50% -12%, rgba(37, 99, 235, 0.42), transparent 60%),
+    radial-gradient(42% 40% at 2% 8%, rgba(56, 189, 248, 0.3), transparent 60%),
+    radial-gradient(46% 44% at 98% 16%, rgba(99, 102, 241, 0.34), transparent 60%),
+    radial-gradient(52% 48% at 72% 114%, rgba(139, 92, 246, 0.32), transparent 62%);
+  filter: blur(22px) saturate(1.2);
+  animation: aurora-drift 28s ease-in-out infinite alternate;
+}
+
+/* Dot-grid premium + viñeta (capa nítida) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1.5px),
+    radial-gradient(130% 115% at 50% 0%, transparent 58%, rgba(3, 7, 18, 0.72) 100%);
+  background-size:
+    24px 24px,
+    100% 100%;
+}
+
+@keyframes aurora-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(3%, 2%, 0) scale(1.1); }
+}
+
+/* Inputs nativos (date/time/checkbox/select) en esquema oscuro */
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
+/* Icono del selector nativo (date/time) tintado al acento azul. */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  filter: invert(62%) sepia(60%) saturate(2200%) hue-rotate(190deg) brightness(1.05);
+  transition: opacity 0.2s ease;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   Clases Premium Aurora Glass (acorde a pc.md / mobile.md)
+   ============================================================ */
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.glass-panel {
+  background: rgba(15, 22, 35, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(22, 31, 46, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-modal {
+  background: rgba(12, 18, 30, 0.95);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+}
+
+.glass-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-input:focus-within {
+  border-color: #3b82f6;
+  background: rgba(30, 41, 59, 0.75);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.glow-button {
+  box-shadow: 0 8px 25px -4px rgba(37, 99, 235, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
+   Cristal interactivo (Aurora Glass): hover con escala,
+   brillo que sigue el cursor y barrido shimmer. Firma del mockup.
+   Se aplica solo a tarjetas marcadas con .glass-panel-hover.
+   ============================================================ */
+.glass-panel-hover {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease-out, border-color 0.4s ease-out, box-shadow 0.4s ease-out;
+}
+
+.glass-panel-hover:hover {
+  transform: scale(1.01);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Brillo radial que sigue el mouse (--mouse-x/--mouse-y los setea AppLayout) */
+.glass-panel-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    520px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(96, 165, 250, 0.12),
+    transparent 42%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.glass-panel-hover:hover::before {
+  opacity: 1;
+}
+
+/* Barrido shimmer */
+.glass-panel-hover::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.06), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.7s ease-out;
+}
+
+.glass-panel-hover:hover::after {
+  left: 200%;
+}
+
+/* Borde izquierdo luminoso para eventos del timeline */
+.glow-border-left {
+  border-left: 4px solid #3b82f6;
+  box-shadow: -6px 0 20px rgba(59, 130, 246, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================================
+   Auth (login / registro) — Aurora Glass
+   Desktop: panel deslizante (overlay que se mueve a un lado)
+   Mobile : panel único con pestañas
+   Todo bajo .auth-shell para no chocar con clases globales.
+   ============================================================ */
+
+.auth-shell {
+  /* Tokens temáticos (modo oscuro por defecto). El modo claro los sobreescribe
+     más abajo con [data-theme="light"] / .light, sin tocar el resto del CSS. */
+  --as-bg: #050811;
+  --as-panel: linear-gradient(135deg, rgba(28, 31, 41, 0.6) 0%, rgba(10, 14, 23, 0.4) 100%);
+  --as-panel-solid: rgba(15, 19, 29, 0.4);
+  --as-border: rgba(255, 255, 255, 0.1);
+  --as-border-soft: rgba(255, 255, 255, 0.08);
+  --as-input-bg: rgba(255, 255, 255, 0.03);
+  --as-input-bg-focus: rgba(255, 255, 255, 0.05);
+  --as-text: #f8fafc;
+  --as-text-muted: #94a3b8;
+  --as-icon: rgba(148, 163, 184, 0.6);
+  --as-placeholder: rgba(148, 163, 184, 0.45);
+  --as-ghost-bg: rgba(255, 255, 255, 0.05);
+  --as-ghost-bg-hover: rgba(255, 255, 255, 0.1);
+  --as-overlay: linear-gradient(135deg, rgba(77, 142, 255, 0.1) 0%, rgba(15, 19, 29, 0.8) 100%);
+
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow: hidden;
+  background-color: var(--as-bg);
+}
+
+/* Modo claro (preparado; se activa con <html class="light"> o [data-theme="light"]).
+   Vidrio claro sobre lavanda suave, manteniendo los acentos de marca. */
+:where([data-theme="light"], .light) .auth-shell {
+  --as-bg: #eef1f8;
+  --as-panel: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(236, 240, 248, 0.6) 100%);
+  --as-panel-solid: rgba(255, 255, 255, 0.7);
+  --as-border: rgba(15, 23, 42, 0.1);
+  --as-border-soft: rgba(15, 23, 42, 0.08);
+  --as-input-bg: rgba(15, 23, 42, 0.03);
+  --as-input-bg-focus: rgba(77, 142, 255, 0.06);
+  --as-text: #0f172a;
+  --as-text-muted: #475569;
+  --as-icon: rgba(71, 85, 105, 0.7);
+  --as-placeholder: rgba(71, 85, 105, 0.5);
+  --as-ghost-bg: rgba(15, 23, 42, 0.04);
+  --as-ghost-bg-hover: rgba(15, 23, 42, 0.08);
+  --as-overlay: linear-gradient(135deg, rgba(77, 142, 255, 0.16) 0%, rgba(226, 232, 248, 0.85) 100%);
+}
+
+/* Fondo: malla de aurora + grano */
+.auth-shell .as-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(77, 142, 255, 0.15), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(78, 222, 163, 0.1), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(49, 49, 192, 0.15), transparent 50%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.auth-shell .as-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Inputs y botones compartidos ---------- */
+.auth-shell .as-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  background: var(--as-input-bg);
+  border: 1px solid var(--as-border);
+  color: var(--as-text);
+  font-size: 0.875rem;
+  padding: 0.75rem 2.75rem 0.75rem 2.75rem;
+  transition: all 0.3s ease;
+}
+
+.auth-shell .as-input::placeholder { color: var(--as-placeholder); }
+
+.auth-shell .as-input:focus {
+  outline: none;
+  background: var(--as-input-bg-focus);
+  border-color: rgba(77, 142, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(77, 142, 255, 0.5), 0 0 15px rgba(77, 142, 255, 0.15);
+}
+
+.auth-shell .as-field-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--as-icon);
+  font-size: 20px;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.auth-shell .as-field:focus-within .as-field-icon { color: #adc6ff; }
+
+.auth-shell .as-eye {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  color: rgba(148, 163, 184, 0.7);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.auth-shell .as-eye:hover { color: #f8fafc; background: rgba(255, 255, 255, 0.06); }
+
+.auth-shell .as-btn-primary {
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #4d8eff 0%, #3131c0 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 4px 15px rgba(77, 142, 255, 0.3);
+  transition: all 0.25s ease;
+}
+
+.auth-shell .as-btn-primary:hover:not(:disabled) {
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 6px 20px rgba(77, 142, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.auth-shell .as-btn-primary:active:not(:disabled) { transform: scale(0.98); }
+.auth-shell .as-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.auth-shell .as-btn-ghost {
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--as-text);
+  background: var(--as-ghost-bg);
+  border: 1px solid var(--as-border);
+  transition: all 0.25s ease;
+}
+
+.auth-shell .as-btn-ghost:hover { background: var(--as-ghost-bg-hover); border-color: rgba(120, 130, 150, 0.35); }
+.auth-shell .as-btn-ghost:active { transform: scale(0.98); }
+
+.auth-shell .as-btn-outline {
+  border-radius: 9999px;
+  padding: 0.7rem 2rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+}
+
+.auth-shell .as-btn-outline:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.55); }
+
+/* Medidor de seguridad */
+.auth-shell .as-strength-seg {
+  height: 4px;
+  flex: 1;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* ============================================================
+   Desktop — contenedor deslizante
+   ============================================================ */
+.auth-shell .as-container {
+  position: relative;
+  z-index: 10;
+  width: 1000px;
+  max-width: 100%;
+  min-height: 600px;
+  border-radius: 24px;
+  background: var(--as-panel);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--as-border);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.auth-shell .as-form {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 3.5rem;
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.auth-shell .as-signin { left: 0; opacity: 1; z-index: 2; }
+.auth-shell .as-signup { left: 0; opacity: 0; z-index: 1; transform: translateX(100%); }
+
+.auth-shell .as-container.as-active .as-signin { transform: translateX(-100%); opacity: 0; }
+.auth-shell .as-container.as-active .as-signup { transform: translateX(100%); opacity: 1; z-index: 5; }
+
+.auth-shell .as-overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 10;
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.auth-shell .as-container.as-active .as-overlay-container { transform: translateX(-100%); }
+
+.auth-shell .as-overlay {
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  display: flex;
+  background: var(--as-overlay);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  transform: translateX(0);
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.auth-shell .as-container.as-active .as-overlay {
+  transform: translateX(50%);
+  border-left: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.auth-shell .as-overlay-panel {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 3rem;
+  transform: translateX(0);
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.auth-shell .as-overlay-left { transform: translateX(-20%); }
+.auth-shell .as-container.as-active .as-overlay-left { transform: translateX(0); }
+.auth-shell .as-overlay-right { right: 0; transform: translateX(0); }
+.auth-shell .as-container.as-active .as-overlay-right { transform: translateX(20%); }
+
+/* Brillo (sheen) que recorre el contenedor */
+.auth-shell .as-sheen { position: relative; }
+.auth-shell .as-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 100%);
+  transform: skewX(-25deg);
+  animation: as-sheen 6s infinite;
+  pointer-events: none;
+  z-index: 20;
+}
+
+@keyframes as-sheen {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* ============================================================
+   Mobile — panel único con pestañas
+   ============================================================ */
+.auth-shell .as-mobile {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 26rem;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: var(--as-panel-solid);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--as-border-soft);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.auth-shell .as-tab {
+  flex: 1;
+  padding-bottom: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--as-text-muted);
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.auth-shell .as-tab-active { color: var(--as-text); border-bottom-color: #60a5fa; }
+
+.auth-shell .as-fade { transition: opacity 0.3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-shell .as-form,
+  .auth-shell .as-overlay-container,
+  .auth-shell .as-overlay,
+  .auth-shell .as-overlay-panel { transition: none; }
+  .auth-shell .as-sheen::after { animation: none; }
+}
+
+.glow-blue {
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+}
+
+.glow-teal {
+  box-shadow: 0 0 15px rgba(20, 184, 166, 0.4);
+}
+
+/* ============================================================
+   Animaciones e interacciones
+   ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slide-left {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: translateY(10px) scale(0.85); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.animate-float { animation: float 5s ease-in-out infinite; }
+.animate-shake { animation: shake 0.4s ease-in-out both; }
+
+.animate-fade-in { animation: fade-in 0.2s ease-out both; }
+.animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-left { animation: slide-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-scale-in { animation: scale-in 0.18s ease-out both; }
+.animate-pop-in { animation: pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-rise-in { animation: rise-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.stagger > * { animation: rise-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger > *:nth-child(3) { animation-delay: 0.08s; }
+.stagger > *:nth-child(4) { animation-delay: 0.11s; }
+.stagger > *:nth-child(5) { animation-delay: 0.14s; }
+.stagger > *:nth-child(6) { animation-delay: 0.17s; }
+.stagger > *:nth-child(7) { animation-delay: 0.20s; }
+.stagger > *:nth-child(n + 8) { animation-delay: 0.23s; }
+
+.press { transition: transform 0.12s ease, box-shadow 0.18s ease, background-color 0.18s ease; }
+.press:active { transform: scale(0.97); }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Scrollbar fina y oscura para zonas con scroll (grilla horaria) */
+.scroll-dark { scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+.scroll-dark::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-dark::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+.scroll-dark::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-pop-in,
+  .animate-rise-in,
+  .stagger > * {
+    animation: none;
+  }
+  .press { transition: none; }
+  .press:active { transform: none; }
+  body::before { animation: none; }
+  .animate-float,
+  .animate-shake,
+  .auth-brand-left,
+  .auth-brand-right { animation: none; }
+  .auth-bg::before { animation: none; }
+}

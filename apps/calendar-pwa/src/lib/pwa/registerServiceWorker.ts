@@ -8,7 +8,20 @@
  * `update()` al cargar y cada vez que la app vuelve a primer plano.
  */
 export function registerServiceWorker() {
-  if (!import.meta.env.PROD) return
+  if (!import.meta.env.PROD) {
+    // En desarrollo no debe haber SW: si quedó uno registrado por una build de
+    // producción previa, seguiría sirviendo assets cacheados y "ocultando" los
+    // cambios. Lo desregistramos y limpiamos sus caches.
+    if ('serviceWorker' in navigator) {
+      void navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => void r.unregister())
+      })
+      if ('caches' in window) {
+        void caches.keys().then((keys) => keys.forEach((k) => void caches.delete(k)))
+      }
+    }
+    return
+  }
   if (!('serviceWorker' in navigator)) return
 
   window.addEventListener('load', () => {

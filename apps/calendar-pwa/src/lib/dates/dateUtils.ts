@@ -86,22 +86,48 @@ export function isSameMonth(key: string, anchorKey: string): boolean {
   return key.slice(0, 7) === anchorKey.slice(0, 7)
 }
 
-const timeFormatter = new Intl.DateTimeFormat('es-CO', {
+// Formateador interno 24h (en-GB → "00:00".."23:59"): base estable para parsear
+// horas/minutos y derivar las etiquetas am/pm sin depender del locale.
+const time24Formatter = new Intl.DateTimeFormat('en-GB', {
   timeZone: DEFAULT_TIMEZONE,
   hour: '2-digit',
   minute: '2-digit',
   hour12: false,
 })
 
-/** Hora HH:mm de un ISO en la zona del producto. */
-export function timeFromIso(iso: string): string {
-  return timeFormatter.format(new Date(iso))
+function hourMinFromIso(iso: string): [number, number] {
+  const [h, m] = time24Formatter.format(new Date(iso)).split(':').map(Number)
+  return [h, m]
 }
 
-/** Minutos desde medianoche (zona del producto) para ordenar por hora. */
+/** Etiqueta 12h: (13,5)→"1:05 p.m."; (13,0)→"1 p.m."; (0,0)→"12 a.m." */
+function label12(hour: number, minute: number): string {
+  const period = hour < 12 ? 'a.m.' : 'p.m.'
+  const h12 = hour % 12 === 0 ? 12 : hour % 12
+  return minute === 0 ? `${h12} ${period}` : `${h12}:${String(minute).padStart(2, '0')} ${period}`
+}
+
+/** Hora en formato am/pm de un ISO en la zona del producto ("1:05 p.m."). */
+export function timeFromIso(iso: string): string {
+  const [h, m] = hourMinFromIso(iso)
+  return label12(h, m)
+}
+
+/** Minutos desde medianoche (zona del producto) para ordenar y posicionar por hora. */
 export function minutesFromIso(iso: string): number {
-  const [h, m] = timeFromIso(iso).split(':').map(Number)
+  const [h, m] = hourMinFromIso(iso)
   return h * 60 + m
+}
+
+/** Etiqueta del eje horario de la grilla (hora exacta): 13 → "1 p.m.", 0 → "12 a.m.". */
+export function formatHourLabel(hour: number): string {
+  return label12(hour, 0)
+}
+
+/** Convierte "HH:mm" (24h) a etiqueta am/pm: "14:30" → "2:30 p.m.". */
+export function formatTimeLabel(time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  return label12(h, m)
 }
 
 const dayHeadingFormatter = new Intl.DateTimeFormat('es-CO', {

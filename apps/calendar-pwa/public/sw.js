@@ -7,7 +7,7 @@
  * - Nunca intercepta peticiones a otros orígenes (Supabase va directo a red).
  */
 
-const CACHE_NAME = 'calendar-pwa-v2'
+const CACHE_NAME = 'calendar-pwa-v5'
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/pwa-192.png', '/pwa-512.png']
 
 self.addEventListener('install', (event) => {

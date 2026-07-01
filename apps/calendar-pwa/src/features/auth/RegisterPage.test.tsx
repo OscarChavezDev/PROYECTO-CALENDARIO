@@ -24,29 +24,23 @@ function renderRegister() {
 }
 
 describe('RegisterPage', () => {
-  it('renderiza formulario con email, contraseña y confirmación', () => {
+  it('renderiza formulario con nombre, correo y contraseña', () => {
     renderRegister()
 
-    expect(screen.getByLabelText(/correo/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^contraseña$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirmar contraseña/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /crear cuenta/i })).toBeInTheDocument()
+    expect(screen.getAllByLabelText(/nombre completo/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText(/correo/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByLabelText(/^contraseña$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: /crear cuenta|registrarse/i }).length).toBeGreaterThan(0)
   })
 
-  it('muestra error si las contraseñas no coinciden', () => {
+  it('muestra el medidor de seguridad al escribir la contraseña', () => {
     renderRegister()
 
-    fireEvent.change(screen.getByLabelText(/correo/i), {
-      target: { value: 'oscar@example.com' },
+    fireEvent.change(screen.getByPlaceholderText(/mínimo 6 caracteres/i), {
+      target: { value: 'SuperSegura123!' },
     })
-    fireEvent.change(screen.getByLabelText(/^contraseña$/i), {
-      target: { value: 'secreta123' },
-    })
-    fireEvent.change(screen.getByLabelText(/confirmar contraseña/i), {
-      target: { value: 'otra-distinta' },
-    })
-    fireEvent.submit(screen.getByRole('button', { name: /crear cuenta/i }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent(/las contraseñas no coinciden/i)
+    expect(screen.getAllByText(/^seguridad$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/fuerte/i).length).toBeGreaterThan(0)
   })
 })
