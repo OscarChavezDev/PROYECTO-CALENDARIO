@@ -84,9 +84,10 @@ export function DayTimeline({
         </div>
       )}
 
-      <div ref={scrollRef} className="scroll-dark relative min-h-0 flex-1 overflow-y-auto pr-1">
+      <div ref={scrollRef} className="scroll-dark relative min-h-0 flex-1 overflow-y-auto pb-24 pr-1 md:pb-2">
+        {/* --rail: espacio reservado a la columna de horas (menor en móvil). */}
         <div
-          className={`relative ${onSlotClick ? 'cursor-pointer' : ''}`}
+          className={`relative [--rail:3.75rem] md:[--rail:4.5rem] ${onSlotClick ? 'cursor-pointer' : ''}`}
           style={{ height: 24 * HOUR_H }}
           onClick={
             onSlotClick
@@ -109,7 +110,7 @@ export function DayTimeline({
           {/* Indicador de hueco bajo el cursor */}
           {hover !== null && (
             <div
-              className="pointer-events-none absolute left-[4.5rem] right-2 z-[5] flex items-start rounded-xl bg-blue-500/15 px-3 py-1 ring-1 ring-inset ring-blue-400/40"
+              className="pointer-events-none absolute left-[var(--rail)] right-2 z-[5] flex items-start rounded-xl bg-blue-500/15 px-3 py-1 ring-1 ring-inset ring-blue-400/40"
               style={{ top: (hover / 60) * HOUR_H, height: HOUR_H / 2 }}
             >
               <span className="text-[11px] font-bold tabular-nums text-blue-200">
@@ -175,33 +176,33 @@ export function DayTimeline({
                 style={{
                   top,
                   height,
-                  left: `calc(4.5rem + ${lane * widthPct}% )`,
-                  width: `calc(${widthPct}% - 4.5rem - 0.5rem)`,
+                  left: `calc(var(--rail) + ${lane * widthPct}% )`,
+                  width: `calc(${widthPct}% - var(--rail) - 0.5rem)`,
                 }}
-                className={`glass-panel-hover absolute z-10 flex items-start gap-6 overflow-hidden rounded-2xl border-l-4 p-5 text-left ring-1 ring-inset backdrop-blur-md ${prioBorder[item.priority] ?? prioBorder.media} ${
+                className={`glass-panel-hover absolute z-10 flex items-start gap-3 overflow-hidden rounded-2xl border-l-4 p-3.5 text-left ring-1 ring-inset backdrop-blur-md md:gap-6 md:p-5 ${prioBorder[item.priority] ?? prioBorder.media} ${
                   active ? 'bg-blue-900/20 ring-blue-500/30' : 'bg-[#0f172a]/70 ring-white/10'
                 } ${completed ? 'opacity-50' : ''}`}
               >
-                <div className="w-24 shrink-0">
-                  <span className={`block text-sm font-bold ${completed ? 'text-slate-400 line-through' : 'text-white'}`}>
+                <div className="w-12 shrink-0 md:w-24">
+                  <span className={`block text-xs font-bold md:text-sm ${completed ? 'text-slate-400 line-through' : 'text-white'}`}>
                     {item.time}
                   </span>
-                  {item.endTime && <span className="mt-1 block text-xs font-medium text-slate-400">{item.endTime}</span>}
+                  {item.endTime && <span className="mt-1 block text-[11px] font-medium text-slate-400 md:text-xs">{item.endTime}</span>}
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <h4 className={`mb-2.5 truncate text-base font-semibold ${completed ? 'text-slate-400 line-through' : 'text-white'}`}>
+                  <h4 className={`mb-1.5 truncate text-sm font-semibold md:mb-2.5 md:text-base ${completed ? 'text-slate-400 line-through' : 'text-white'}`}>
                     {item.title}
                   </h4>
                   {isEvent ? (
-                    <div className="flex items-center gap-4 text-xs font-medium text-slate-400">
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-400 md:gap-4">
                       {item.location && (
-                        <span className="flex items-center gap-1.5 rounded-md border border-white/5 bg-white/5 px-2.5 py-1">
-                          <span className="material-symbols-outlined text-[14px] text-blue-400">{iconFor(item)}</span>
-                          {item.location}
+                        <span className="flex min-w-0 items-center gap-1.5 rounded-md border border-white/5 bg-white/5 px-2 py-1 md:px-2.5">
+                          <span className="material-symbols-outlined shrink-0 text-[14px] text-blue-400">{iconFor(item)}</span>
+                          <span className="truncate">{item.location}</span>
                         </span>
                       )}
-                      <div className="flex -space-x-2">
+                      <div className="hidden -space-x-2 md:flex">
                         <div className="grid h-6 w-6 place-items-center rounded-full border border-[#0a101d] bg-slate-600 text-[9px] font-bold text-white">JD</div>
                         <div className="grid h-6 w-6 place-items-center rounded-full border border-[#0a101d] bg-blue-600 text-[9px] font-bold text-white">+4</div>
                       </div>
@@ -214,7 +215,7 @@ export function DayTimeline({
                   )}
                 </div>
 
-                <span className="shrink-0 rounded-lg border border-white/10 bg-black/30 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                <span className="hidden shrink-0 rounded-lg border border-white/10 bg-black/30 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300 md:block">
                   {durLabel(end - start)}
                 </span>
               </button>

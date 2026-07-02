@@ -30,7 +30,8 @@ export function BottomNavBar({
             key={it.id}
             type="button"
             onClick={() => onChange(it.id)}
-            className={`flex flex-col items-center justify-center rounded-xl px-2.5 py-1 transition-colors ${
+            aria-current={active ? 'page' : undefined}
+            className={`press flex min-w-14 flex-col items-center justify-center rounded-xl px-2.5 py-1 transition-colors ${
               active ? 'bg-blue-500/15 text-blue-400' : 'text-slate-400 hover:text-blue-400'
             }`}
           >
@@ -47,7 +48,7 @@ export function BottomNavBar({
       <button
         type="button"
         onClick={() => navigate('/ajustes')}
-        className="flex flex-col items-center justify-center rounded-xl px-2.5 py-1 text-slate-400 transition-colors hover:text-blue-400"
+        className="press flex min-w-14 flex-col items-center justify-center rounded-xl px-2.5 py-1 text-slate-400 transition-colors hover:text-blue-400"
       >
         <span className="material-symbols-outlined text-[22px]">settings</span>
         <span className="mt-0.5 text-[0.7rem] font-medium">Ajustes</span>

@@ -27,6 +27,8 @@ interface CalendarShellProps {
   onUpdateTask: (id: string, values: TaskFormValues) => Promise<void>
   onCompleteTask: (task: Task) => void
   onPostponeTask: (task: Task) => void
+  onDeleteEvent: (event: CalendarEvent) => void
+  onDeleteTask: (task: Task) => void
 }
 
 type FormPanel =
@@ -78,13 +80,18 @@ export function CalendarShell(props: CalendarShellProps) {
   // Valores prellenados al crear desde un hueco (fecha + hora).
   const [createPrefill, setCreatePrefill] = useState<{ date: string; time?: string } | null>(null)
   const [selectedItemDetail, setSelectedItemDetail] = useState<CalendarItem | null>(null)
+  // Confirmación de borrado dentro del panel de detalle (dos pasos, apto para táctil).
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { events, tasks } = props
   const items = useMemo(() => buildItems(events, tasks), [events, tasks])
 
   // Publica datos a la barra lateral (widgets Próximos/Pendientes/Estadísticas).
   const { setData } = useCalendarSidebar()
-  const openItem = useCallback((item: CalendarItem) => setSelectedItemDetail(item), [])
+  const openItem = useCallback((item: CalendarItem) => {
+    setConfirmDelete(false)
+    setSelectedItemDetail(item)
+  }, [])
   const onCompleteRef = useRef(props.onCompleteTask)
   onCompleteRef.current = props.onCompleteTask
   const stableComplete = useCallback((task: Task) => onCompleteRef.current(task), [])
@@ -334,7 +341,7 @@ export function CalendarShell(props: CalendarShellProps) {
         type="button"
         onClick={() => openCreate()}
         aria-label="Crear evento o tarea"
-        className="press fixed bottom-24 right-4 z-40 grid h-14 w-14 place-items-center rounded-full border border-blue-400/30 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_10px_25px_rgba(59,130,246,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] transition hover:scale-105 hover:from-blue-400 hover:to-indigo-500 md:bottom-8 md:right-8"
+        className="press fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom,0px))] right-4 z-40 grid h-14 w-14 place-items-center rounded-full border border-blue-400/30 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-[0_10px_25px_rgba(59,130,246,0.45),inset_0_1px_1px_rgba(255,255,255,0.4)] transition hover:scale-105 hover:from-blue-400 hover:to-indigo-500 md:bottom-8 md:right-8"
       >
         <span className="material-symbols-outlined text-[28px]">add</span>
       </button>
@@ -440,28 +447,18 @@ export function CalendarShell(props: CalendarShellProps) {
           }
           const theme = prioThemes[it.priority] ?? prioThemes.media
 
-          const close = () => setSelectedItemDetail(null)
+          const close = () => {
+            setSelectedItemDetail(null)
+            setConfirmDelete(false)
+          }
           const openEdit = () => {
             close()
             if (it.event) setPanel({ type: 'event', editing: it.event })
             else if (it.task) setPanel({ type: 'task', editing: it.task })
           }
           const removeItem = () => {
-            const ev = it.event
-            if (ev) {
-              void props.onUpdateEvent(ev.id, {
-                title: ev.title,
-                description: ev.description || '',
-                startsAt: ev.starts_at.slice(0, 16),
-                endsAt: ev.ends_at.slice(0, 16),
-                allDay: ev.all_day,
-                priority: ev.priority,
-                status: 'cancelado',
-                requiresDeliverable: ev.requires_deliverable,
-                deliverableDescription: ev.deliverable_description || '',
-                location: ev.location || '',
-              })
-            }
+            if (it.event) props.onDeleteEvent(it.event)
+            else if (it.task) props.onDeleteTask(it.task)
             close()
           }
 
@@ -553,52 +550,89 @@ export function CalendarShell(props: CalendarShellProps) {
                     </div>
                   </div>
 
-                  {/* Estado sincronizado */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sincronizado</span>
-                  </div>
+                  {/* Estado de sincronización real (los ids "local-…" aún no llegan al servidor) */}
+                  {(it.event?.id ?? it.task?.id ?? '').startsWith('local-') ? (
+                    <div className="flex items-center gap-2.5">
+                      <span className="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        Pendiente de sincronizar
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sincronizado</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex shrink-0 items-center gap-3 border-t border-white/10 bg-ui-bg/60 px-6 py-5">
-                  {primaryIsJoin && (
-                    <button
-                      type="button"
-                      onClick={openEdit}
-                      title="Editar"
-                      className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-colors hover:bg-white/10 hover:text-white press"
-                    >
-                      <span className="material-symbols-outlined text-[20px]">edit</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={removeItem}
-                    title="Eliminar"
-                    className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-400 transition-colors hover:bg-rose-500/15 press"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
-
-                  {primaryIsJoin ? (
-                    <button
-                      type="button"
-                      onClick={() => callUrl && window.open(callUrl, '_blank')}
-                      className={`glow-button flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r text-sm font-bold text-white transition-colors press ${theme.btn}`}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">videocam</span>
-                      Unirse a la llamada
-                    </button>
+                <div
+                  className="flex shrink-0 items-center gap-3 border-t border-white/10 bg-ui-bg/60 px-6 py-5"
+                  style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+                >
+                  {confirmDelete ? (
+                    <>
+                      <p className="min-w-0 flex-1 text-sm font-semibold leading-snug text-rose-200">
+                        ¿Eliminar {kindLabel.toLowerCase()}? No se puede deshacer.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(false)}
+                        className="flex h-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-bold text-slate-300 transition-colors hover:bg-white/10 hover:text-white press"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={removeItem}
+                        className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 px-4 text-sm font-bold text-white transition-colors hover:from-rose-400 hover:to-red-500 press"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        Eliminar
+                      </button>
+                    </>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={openEdit}
-                      className={`glow-button flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r text-sm font-bold text-white transition-colors press ${theme.btn}`}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">edit</span>
-                      Editar {kindLabel.toLowerCase()}
-                    </button>
+                    <>
+                      {primaryIsJoin && (
+                        <button
+                          type="button"
+                          onClick={openEdit}
+                          title="Editar"
+                          className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-colors hover:bg-white/10 hover:text-white press"
+                        >
+                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(true)}
+                        title="Eliminar"
+                        className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-rose-500/20 bg-rose-500/5 text-rose-400 transition-colors hover:bg-rose-500/15 press"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                      </button>
+
+                      {primaryIsJoin ? (
+                        <button
+                          type="button"
+                          onClick={() => callUrl && window.open(callUrl, '_blank')}
+                          className={`glow-button flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r text-sm font-bold text-white transition-colors press ${theme.btn}`}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">videocam</span>
+                          Unirse a la llamada
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={openEdit}
+                          className={`glow-button flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r text-sm font-bold text-white transition-colors press ${theme.btn}`}
+                        >
+                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                          Editar {kindLabel.toLowerCase()}
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

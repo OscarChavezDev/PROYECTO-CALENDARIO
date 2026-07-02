@@ -78,7 +78,7 @@ export function FormModal({ open, title, accent, tabs, onClose, children }: Form
         {/* Tabs EVENTO / TAREA */}
         {tabs && (
           <div className="px-6 pt-4">
-            <div className="flex w-fit gap-1 rounded-xl border border-white/5 bg-black/25 p-1 backdrop-blur-xl">
+            <div className="flex w-full gap-1 rounded-xl border border-white/5 bg-black/25 p-1 backdrop-blur-xl sm:w-fit">
               {(['event', 'task'] as const).map((kind) => {
                 const isActive = tabs.active === kind
                 const activeCls =
@@ -90,7 +90,7 @@ export function FormModal({ open, title, accent, tabs, onClose, children }: Form
                     key={kind}
                     type="button"
                     onClick={() => tabs.onSelect(kind)}
-                    className={`rounded-lg px-6 py-2 text-xs font-bold uppercase tracking-[0.08em] transition-all ${
+                    className={`flex-1 rounded-lg px-6 py-2.5 text-xs font-bold uppercase tracking-[0.08em] transition-all sm:flex-none sm:py-2 ${
                       isActive ? activeCls : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -102,8 +102,13 @@ export function FormModal({ open, title, accent, tabs, onClose, children }: Form
           </div>
         )}
 
-        {/* Contenido */}
-        <div className="custom-scrollbar overflow-y-auto px-6 py-5">{children}</div>
+        {/* Contenido (con safe-area inferior para el bottom sheet en iPhone) */}
+        <div
+          className="custom-scrollbar overflow-y-auto px-5 py-5 sm:px-6"
+          style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          {children}
+        </div>
       </div>
     </div>,
     document.body,

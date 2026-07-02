@@ -154,7 +154,7 @@ export function ItemDetailPage({ kind }: { kind: 'evento' | 'tarea' }) {
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="press inline-flex items-center gap-1.5 rounded-full border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/100/10 disabled:opacity-50"
+                className="press inline-flex items-center gap-1.5 rounded-full border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"
               >
                 <i className="fi fi-rr-trash align-middle"></i>
                 {deleting ? 'Eliminando…' : 'Eliminar'}

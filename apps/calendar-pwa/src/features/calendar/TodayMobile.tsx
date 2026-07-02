@@ -7,10 +7,12 @@ import { firstNameOf, greetingFor, untilLabel } from './todayUtils'
 
 const CARD = 'rounded-2xl border border-ui-line/40 bg-ui-card/60 backdrop-blur-md shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)]'
 
-/** Convierte "HH:mm" (24h) a { hm: "01:00", ap: "PM" }. */
-function to12(time: string | null) {
-  if (!time) return { hm: 'Día', ap: '' }
-  const [h, m] = time.split(':').map(Number)
+/** Convierte minutos desde medianoche a { hm: "01:00", ap: "PM" }.
+    (item.time es una etiqueta tipo "4 p.m.", no parseable; sortMinutes sí es numérico.) */
+function to12(item: CalendarItem) {
+  if (item.time === null) return { hm: 'Día', ap: '' }
+  const h = Math.floor(item.sortMinutes / 60)
+  const m = item.sortMinutes % 60
   const ap = h >= 12 ? 'PM' : 'AM'
   const h12 = ((h + 11) % 12) + 1
   return { hm: `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')}`, ap }
@@ -148,13 +150,14 @@ export function TodayMobile({
           </div>
         ) : (
           <div className="relative ml-2 flex flex-col gap-6">
-            {/* Línea vertical del timeline */}
-            <div className="absolute bottom-2 left-[33px] top-2 -z-10 w-[2px] bg-ui-line" />
+            {/* Línea vertical del timeline (entre la hora y la tarjeta, sin pisar el texto) */}
+            <div className="absolute bottom-2 left-[69px] top-2 -z-10 w-[2px] bg-ui-line" />
 
             {agenda.map((item, idx) => {
-              const past = item.sortMinutes < nowMin
+              // Pasado = ya terminó (no tachar un evento que está en curso).
+              const past = item.sortMinutes + (item.durationMin ?? 60) <= nowMin
               const active = idx === firstFutureIdx
-              const { hm, ap } = to12(item.time)
+              const { hm, ap } = to12(item)
               return (
                 <div key={`m-agenda-${item.id}`} className="flex flex-col gap-6">
                   {/* Indicador de hora actual, antes del primer evento futuro */}
@@ -173,7 +176,7 @@ export function TodayMobile({
                   <button
                     type="button"
                     onClick={() => actions.onOpen(item)}
-                    className={`relative flex gap-4 text-left ${past ? 'opacity-60' : ''}`}
+                    className={`press relative flex gap-4 text-left ${past ? 'opacity-60' : ''}`}
                   >
                     <div className="flex w-16 shrink-0 flex-col items-center pr-2 text-right">
                       <span className={`text-xs font-bold ${past ? 'text-slate-400' : 'text-white'}`}>{hm}</span>
@@ -184,10 +187,10 @@ export function TodayMobile({
                     <div
                       className={`absolute top-1.5 h-[10px] w-[10px] rounded-full border-2 ${
                         active
-                          ? 'left-[29px] border-blue-500 bg-ui-card ring-4 ring-blue-500/15'
+                          ? 'left-[65px] border-blue-500 bg-ui-card ring-4 ring-blue-500/15'
                           : past
-                            ? 'left-[30px] border-ui-bg bg-slate-500'
-                            : 'left-[30px] border-ui-bg bg-blue-500'
+                            ? 'left-[66px] border-ui-bg bg-slate-500'
+                            : 'left-[66px] border-ui-bg bg-blue-500'
                       }`}
                     />
 

@@ -6,6 +6,7 @@ import {
   countQueue,
   enqueueMutation,
   findQueuedCreate,
+  removeMutation,
   updateMutationPayload,
 } from '../../lib/offline/offlineQueue'
 import { processQueue } from '../../lib/offline/syncQueue'
@@ -20,6 +21,7 @@ import { useAuth } from '../auth/useAuth'
 import {
   buildLocalEvent,
   createEvent,
+  deleteEvent,
   listEvents,
   mergeEventValues,
   updateEvent,
@@ -29,6 +31,7 @@ import {
   buildLocalTask,
   completeTask,
   createTask,
+  deleteTask,
   listTasks,
   mergeTaskValues,
   postponeTask,
@@ -252,6 +255,34 @@ export function CalendarPage() {
     }
   }
 
+  async function handleDeleteEvent(event: CalendarEvent) {
+    try {
+      if (!online) {
+        if (event.id.startsWith('local-')) {
+          // Aún no existe en el servidor: basta con descartar el create encolado.
+          const queued = await findQueuedCreate('event', event.id)
+          if (queued) await removeMutation(queued.id)
+        } else {
+          await enqueueMutation({
+            entity_type: 'event',
+            operation: 'delete',
+            entity_id: event.id,
+            base_updated_at: event.updated_at,
+            payload: {},
+          })
+        }
+        setEvents((prev) => prev.filter((e) => e.id !== event.id))
+        refreshPendingCount()
+        return
+      }
+      await deleteEvent(event.id)
+      setEvents((prev) => prev.filter((e) => e.id !== event.id))
+      await safeReminders(() => deleteReminders('event', event.id))
+    } catch (err) {
+      reportError(err, 'Error eliminando el evento.')
+    }
+  }
+
   // ----- Tareas -----
 
   async function handleCreateTask(values: TaskFormValues) {
@@ -388,6 +419,34 @@ export function CalendarPage() {
     }
   }
 
+  async function handleDeleteTask(task: Task) {
+    try {
+      if (!online) {
+        if (task.id.startsWith('local-')) {
+          // Aún no existe en el servidor: basta con descartar el create encolado.
+          const queued = await findQueuedCreate('task', task.id)
+          if (queued) await removeMutation(queued.id)
+        } else {
+          await enqueueMutation({
+            entity_type: 'task',
+            operation: 'delete',
+            entity_id: task.id,
+            base_updated_at: task.updated_at,
+            payload: {},
+          })
+        }
+        setTasks((prev) => prev.filter((t) => t.id !== task.id))
+        refreshPendingCount()
+        return
+      }
+      await deleteTask(task.id)
+      setTasks((prev) => prev.filter((t) => t.id !== task.id))
+      await safeReminders(() => deleteReminders('task', task.id))
+    } catch (err) {
+      reportError(err, 'Error eliminando la tarea.')
+    }
+  }
+
   return (
     <section className="flex h-full min-h-0 flex-col">
 
@@ -418,6 +477,12 @@ export function CalendarPage() {
           }}
           onPostponeTask={(task) => {
             void handlePostponeTask(task)
+          }}
+          onDeleteEvent={(event) => {
+            void handleDeleteEvent(event)
+          }}
+          onDeleteTask={(task) => {
+            void handleDeleteTask(task)
           }}
         />
       ) : (

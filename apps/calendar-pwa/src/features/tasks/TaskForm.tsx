@@ -16,6 +16,12 @@ const labelClass = 'flex flex-col gap-1.5 text-[10px] font-semibold uppercase tr
 const quickChip =
   'press rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-semibold normal-case tracking-normal text-slate-300 transition-colors hover:border-teal-400/40 hover:text-white'
 
+// Autofoco solo con puntero fino: en táctil el teclado taparía el bottom sheet.
+const canAutoFocus = () =>
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(pointer: fine)').matches
+
 interface TaskFormProps {
   initial?: Task | null
   /** Día por defecto (YYYY-MM-DD) al crear, según la vista activa. */
@@ -107,7 +113,7 @@ export function TaskForm({ initial, defaultDate, defaultTime, onSubmit, onCancel
           onChange={(e) => setTitle(e.target.value)}
           placeholder="¿Qué necesitas completar?"
           className={inputClass}
-          autoFocus
+          autoFocus={canAutoFocus()}
         />
       </label>
 

@@ -136,13 +136,15 @@ export function TimeGrid({
     // Solo al montar / cambiar de día visible.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showsToday])
-  const cols = `4rem repeat(${days.length}, minmax(0, 1fr))`
+  // Columna de horas vía CSS var: 3rem en móvil, 4rem en escritorio (--hourcol
+  // se define en el contenedor raíz de la grilla).
+  const cols = `var(--hourcol) repeat(${days.length}, minmax(0, 1fr))`
   const weekday = new Intl.DateTimeFormat('es-CO', { timeZone: 'UTC', weekday: 'short' })
   const fmtWeekday = (key: string) =>
     weekday.format(new Date(`${key}T12:00:00Z`)).replace('.', '')
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden px-4 md:px-8 pb-6">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden px-2 pb-6 [--hourcol:3rem] md:px-8 md:[--hourcol:4rem]">
       {/* Encabezado de días */}
       {showDayHeader && (
         <div className="grid shrink-0 border-b border-white/5" style={{ gridTemplateColumns: cols }}>
@@ -199,13 +201,13 @@ export function TimeGrid({
       )}
 
       {/* Grilla horaria */}
-      <div ref={scrollRef} className="scroll-dark relative min-h-0 flex-1 overflow-y-auto pt-3">
+      <div ref={scrollRef} className="scroll-dark relative min-h-0 flex-1 overflow-y-auto pb-20 pt-3 md:pb-0">
         <div className="relative grid" style={{ gridTemplateColumns: cols, height: (DAY_MIN / 60) * HOUR_H }}>
           {/* Columna de horas */}
           <div className="relative">
             {Array.from({ length: 24 }, (_, h) => (
               <div key={h} style={{ height: HOUR_H }} className="relative">
-                <span className="absolute right-3 top-0 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-500">
+                <span className="absolute right-1.5 top-0 -translate-y-1/2 text-[10px] font-bold uppercase text-slate-500 md:right-3">
                   {h === 0 ? '' : formatHourLabel(h)}
                 </span>
               </div>
@@ -287,7 +289,7 @@ export function TimeGrid({
                         left: `calc(${lane * widthPct}% + 4px)`,
                         width: `calc(${widthPct}% - 8px)`,
                       }}
-                      className={`group press absolute z-10 flex flex-col overflow-hidden rounded-xl border-l-4 px-3 py-2 text-left leading-tight shadow-lg ring-1 backdrop-blur-md transition-all hover:brightness-110 ${cardStyle} ${
+                      className={`group press absolute z-10 flex flex-col overflow-hidden rounded-lg border-l-4 px-1.5 py-1.5 text-left leading-tight shadow-lg ring-1 backdrop-blur-md transition-all hover:brightness-110 md:rounded-xl md:px-3 md:py-2 ${cardStyle} ${
                         completed ? 'opacity-40 line-through' : ''
                       }`}
                     >
@@ -322,7 +324,7 @@ export function TimeGrid({
               className="pointer-events-none absolute inset-x-0 z-[5] flex items-center"
               style={{ top: (nowMin / 60) * HOUR_H }}
             >
-              <span className="flex w-16 justify-end pr-2">
+              <span className="flex w-[var(--hourcol)] justify-end pr-1 md:pr-2">
                 <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white shadow-[0_0_10px_rgba(37,99,235,0.6)]">
                   {toHM(nowMin)}
                 </span>
